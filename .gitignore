@@ -1,0 +1,15 @@
+# Tilt / Docker
+.tilt-build/
+tilt_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Lokalne env / secrets
+.env.local
+*.local

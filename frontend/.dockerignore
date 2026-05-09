@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.storybook/cache
+.git
+.gitignore
+.env
+.env.*
+.vscode
+.idea
+*.md
+README*
+Dockerfile
+.dockerignore
+package-lock.json

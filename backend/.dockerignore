@@ -1,0 +1,16 @@
+.git
+.gitignore
+.idea
+.vscode
+.claude
+*.md
+README*
+tmp/
+bin/
+dist/
+coverage.out
+*.test
+.env
+.env.*
+Dockerfile
+.dockerignore

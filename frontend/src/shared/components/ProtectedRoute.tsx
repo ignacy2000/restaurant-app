@@ -1,0 +1,9 @@
+import { Navigate } from 'react-router-dom'
+import { authStorage } from '../services/auth.storage'
+
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  if (!authStorage.isAuthenticated()) {
+    return <Navigate to="/login" replace />
+  }
+  return <>{children}</>
+}

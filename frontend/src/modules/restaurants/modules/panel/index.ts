@@ -1,0 +1,1 @@
+export { panelRoutes } from './routes'
