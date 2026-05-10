@@ -7,9 +7,7 @@ FROM golang:1.26-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache git
 COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    go mod download
+RUN go mod download
 
 ############################
 # Stage: dev (air hot reload)
@@ -35,8 +33,7 @@ RUN apk add --no-cache git
 ENV GOTOOLCHAIN=auto
 COPY --from=deps /go/pkg/mod /go/pkg/mod
 COPY . .
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
+RUN --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/api
 
 ############################

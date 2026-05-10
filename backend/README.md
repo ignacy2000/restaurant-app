@@ -35,8 +35,11 @@ Serwer przy starcie automatycznie uruchamia migracje i worker kolejki.
 | `JWT_SECRET` | `change-me-in-production` | Sekret podpisywania JWT |
 | `FRONTEND_URL` | `http://localhost:3000` | Adres frontendu (CORS + linki w mailach) |
 | `REDIS_ADDR` | `localhost:6379` | Adres Redis |
-| `GMAIL_FROM` | — | Adres Gmail nadawcy |
-| `GMAIL_APP_PASSWORD` | — | Hasło aplikacji Gmail (nie logowania) |
+| `SMTP_HOST` | `localhost` | Host SMTP (np. `mailpit` w Dockerze, `smtp.gmail.com` w prod) |
+| `SMTP_PORT` | `1025` | Port SMTP (Mailpit `1025`, Gmail `587`) |
+| `SMTP_FROM` | `no-reply@localhost` | Adres nadawcy |
+| `SMTP_USERNAME` | — | Login SMTP (puste = bez auth, np. dla Mailpit) |
+| `SMTP_PASSWORD` | — | Hasło SMTP |
 
 ## API
 

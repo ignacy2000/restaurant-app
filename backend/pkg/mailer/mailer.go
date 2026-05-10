@@ -12,16 +12,22 @@ type OrderItem struct {
 }
 
 type Mailer struct {
+	host     string
+	port     string
 	from     string
+	username string
 	password string
 }
 
-func New(from, password string) *Mailer {
-	return &Mailer{from: from, password: password}
+func New(host, port, from, username, password string) *Mailer {
+	return &Mailer{host: host, port: port, from: from, username: username, password: password}
 }
 
 func (m *Mailer) send(to, subject, htmlBody string) error {
-	auth := smtp.PlainAuth("", m.from, m.password, "smtp.gmail.com")
+	var auth smtp.Auth
+	if m.username != "" {
+		auth = smtp.PlainAuth("", m.username, m.password, m.host)
+	}
 	headers := strings.Join([]string{
 		"From: " + m.from,
 		"To: " + to,
@@ -30,7 +36,7 @@ func (m *Mailer) send(to, subject, htmlBody string) error {
 		"Content-Type: text/html; charset=UTF-8",
 	}, "\r\n")
 	msg := []byte(headers + "\r\n\r\n" + htmlBody)
-	return smtp.SendMail("smtp.gmail.com:587", auth, m.from, []string{to}, msg)
+	return smtp.SendMail(m.host+":"+m.port, auth, m.from, []string{to}, msg)
 }
 
 func (m *Mailer) SendPasswordReset(to, resetURL string) error {

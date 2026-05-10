@@ -45,8 +45,11 @@ services:
       REDIS_ADDR: redis:6379
       JWT_SECRET: dev-secret-change-me
       FRONTEND_URL: http://localhost:3000
-      GMAIL_FROM: ""
-      GMAIL_APP_PASSWORD: ""
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_FROM: no-reply@restaurant.local
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
     ports:
       - "8080:8080"
     volumes:
@@ -59,6 +62,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     restart: unless-stopped
 
   frontend:
@@ -90,6 +95,18 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  mailpit:
+    image: axllent/mailpit:latest
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    volumes:
+      - mailpit_data:/data
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
@@ -97,3 +114,4 @@ volumes:
   go_build_cache:
   backend_tmp:
   frontend_node_modules:
+  mailpit_data:

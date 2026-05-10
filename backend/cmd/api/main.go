@@ -42,7 +42,7 @@ func main() {
 	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: cfg.RedisAddr})
 	defer asynqClient.Close()
 
-	mail := mailer.New(cfg.GmailFrom, cfg.GmailAppPassword)
+	mail := mailer.New(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPFrom, cfg.SMTPUsername, cfg.SMTPPassword)
 	proc := worker.NewEmailProcessor(mail)
 	srv := worker.NewServer(cfg.RedisAddr)
 	go func() {
