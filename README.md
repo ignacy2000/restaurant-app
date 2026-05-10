@@ -40,6 +40,24 @@ docker volume rm restaurant-app_postgres_data restaurant-app_redis_data   # peł
 - **Frontend**: edycja `frontend/src/` → Vite HMR przeładowuje moduły bez full reloadu.
 - **Zależności**: zmiana `go.mod`/`go.sum` lub `package.json`/`bun.lock` → Tilt robi pełny rebuild obrazu.
 
+## Testy
+
+```bash
+docker compose exec frontend bun run test            # vitest, pojedyncze przejście
+docker compose exec frontend bun run test:watch      # tryb watch
+docker compose exec frontend bun run test:coverage   # z raportem coverage
+
+docker compose exec backend go test ./...            # wszystkie pakiety
+docker compose exec backend go test -race -count=1 ./...
+```
+
+Lokalnie z hosta (bez kontenerów):
+
+```bash
+cd frontend && bun run test
+cd backend && go test ./...
+```
+
 ## Migracje DB
 
 Backend uruchamia `golang-migrate` automatycznie na starcie ([backend/cmd/api/main.go](backend/cmd/api/main.go)). Świeży `tilt up` na pustej bazie utworzy schemat sam.
