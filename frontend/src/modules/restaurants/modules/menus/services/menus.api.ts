@@ -1,5 +1,5 @@
 import { http, authedHttp } from '../../../../../shared/services/http'
-import type { Menu, CreateMenuReq, MenuItem, CreateMenuItemReq } from '../types/menu.types'
+import type { Menu, CreateMenuReq, MenuItem, CreateMenuItemReq, UpdateMenuItemReq } from '../types/menu.types'
 
 export const menusApi = {
   async getByRestaurant(restaurantId: string, signal?: AbortSignal): Promise<Menu[]> {
@@ -13,6 +13,12 @@ export const menusApi = {
       body: JSON.stringify(data),
     }),
 
+  update: (menuId: string, data: CreateMenuReq) =>
+    authedHttp<Menu>(`/menus/${menuId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
   async getItemsByRestaurant(restaurantId: string): Promise<MenuItem[]> {
     const data = await http<MenuItem[] | null>(`/restaurants/${restaurantId}/menu-items`)
     return data ?? []
@@ -21,6 +27,12 @@ export const menusApi = {
   createItem: (menuId: string, data: CreateMenuItemReq) =>
     authedHttp<MenuItem>(`/menus/${menuId}/items`, {
       method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateItem: (itemId: string, data: UpdateMenuItemReq) =>
+    authedHttp<MenuItem>(`/menu-items/${itemId}`, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     }),
 

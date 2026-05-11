@@ -39,5 +39,11 @@ export function useMenus(restaurantId: string) {
     return created
   }, [restaurantId])
 
-  return { menus, loading, error, create }
+  const update = useCallback(async (menuId: string, data: CreateMenuReq): Promise<Menu> => {
+    const updated = await menusApi.update(menuId, data)
+    if (mountedRef.current) setMenus(prev => prev.map(m => m.id === menuId ? updated : m))
+    return updated
+  }, [])
+
+  return { menus, loading, error, create, update }
 }

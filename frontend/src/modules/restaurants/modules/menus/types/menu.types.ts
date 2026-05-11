@@ -28,3 +28,11 @@ export interface CreateMenuItemReq {
   position?: number
   image_url?: string
 }
+
+export interface UpdateMenuItemReq {
+  name: string
+  description?: string
+  price: number
+  position?: number
+  image_url?: string
+}

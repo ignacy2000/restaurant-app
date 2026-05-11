@@ -54,6 +54,31 @@ func (h *Handler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
+func (h *Handler) Update(c *gin.Context) {
+	userID := c.GetString(middleware.UserIDKey)
+	menuID := c.Param("menuId")
+
+	var req UpdateReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp, err := h.svc.Update(c.Request.Context(), menuID, userID, req)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "menu not found"})
+		case errors.Is(err, ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"error": "not the restaurant owner"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		}
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 func (h *Handler) GetByRestaurant(c *gin.Context) {
 	resp, err := h.svc.GetByRestaurant(c.Request.Context(), c.Param("id"))
 	if err != nil {
@@ -131,6 +156,31 @@ func (h *Handler) UploadItemImage(c *gin.Context) {
 	defer file.Close()
 
 	resp, err := h.svc.UploadItemImage(c.Request.Context(), itemID, userID, file, fileHeader.Size, contentType, ext)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "item not found"})
+		case errors.Is(err, ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"error": "not the restaurant owner"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		}
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *Handler) UpdateItem(c *gin.Context) {
+	userID := c.GetString(middleware.UserIDKey)
+	itemID := c.Param("itemId")
+
+	var req UpdateItemReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp, err := h.svc.UpdateItem(c.Request.Context(), itemID, userID, req)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrNotFound):

@@ -53,6 +53,28 @@ func (s *Service) Create(ctx context.Context, restaurantID, userID string, req C
 	return toResponse(m), nil
 }
 
+func (s *Service) Update(ctx context.Context, menuID, userID string, req UpdateReq) (*Response, error) {
+	restaurantID, err := s.repo.FindMenuRestaurantID(ctx, menuID)
+	if err != nil {
+		return nil, fmt.Errorf("find menu: %w", err)
+	}
+	if restaurantID == "" {
+		return nil, ErrNotFound
+	}
+	ownerID, err := s.restaurantRepo.FindOwnerID(ctx, restaurantID)
+	if err != nil {
+		return nil, fmt.Errorf("find owner: %w", err)
+	}
+	if ownerID != userID {
+		return nil, ErrForbidden
+	}
+	m := &Menu{ID: menuID, Name: req.Name, Description: req.Description}
+	if err := s.repo.UpdateMenu(ctx, m); err != nil {
+		return nil, fmt.Errorf("update menu: %w", err)
+	}
+	return toResponse(m), nil
+}
+
 func (s *Service) GetByRestaurant(ctx context.Context, restaurantID string) ([]Response, error) {
 	menus, err := s.repo.FindByRestaurantID(ctx, restaurantID)
 	if err != nil {
@@ -90,6 +112,35 @@ func (s *Service) CreateItem(ctx context.Context, menuID, userID string, req Cre
 	}
 	if err := s.repo.CreateItem(ctx, item); err != nil {
 		return nil, fmt.Errorf("create item: %w", err)
+	}
+	return toItemResponse(item), nil
+}
+
+func (s *Service) UpdateItem(ctx context.Context, itemID, userID string, req UpdateItemReq) (*ItemResponse, error) {
+	restaurantID, err := s.repo.FindItemRestaurantID(ctx, itemID)
+	if err != nil {
+		return nil, fmt.Errorf("find item: %w", err)
+	}
+	if restaurantID == "" {
+		return nil, ErrNotFound
+	}
+	ownerID, err := s.restaurantRepo.FindOwnerID(ctx, restaurantID)
+	if err != nil {
+		return nil, fmt.Errorf("find owner: %w", err)
+	}
+	if ownerID != userID {
+		return nil, ErrForbidden
+	}
+	item := &MenuItem{
+		ID:          itemID,
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+		Position:    req.Position,
+		ImageURL:    req.ImageURL,
+	}
+	if err := s.repo.UpdateItem(ctx, item); err != nil {
+		return nil, fmt.Errorf("update item: %w", err)
 	}
 	return toItemResponse(item), nil
 }

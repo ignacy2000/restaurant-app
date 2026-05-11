@@ -42,6 +42,26 @@ func (r *Repository) FindByRestaurantID(ctx context.Context, restaurantID string
 	return results, rows.Err()
 }
 
+func (r *Repository) UpdateMenu(ctx context.Context, m *Menu) error {
+	query := `
+		UPDATE menus
+		SET name = $1, description = $2
+		WHERE id = $3
+		RETURNING restaurant_id, created_at, updated_at`
+	return r.db.QueryRowContext(ctx, query, m.Name, m.Description, m.ID).
+		Scan(&m.RestaurantID, &m.CreatedAt, &m.UpdatedAt)
+}
+
+func (r *Repository) UpdateItem(ctx context.Context, item *MenuItem) error {
+	query := `
+		UPDATE menu_items
+		SET name = $1, description = $2, price = $3, position = $4, image_url = $5
+		WHERE id = $6
+		RETURNING menu_id, created_at`
+	return r.db.QueryRowContext(ctx, query, item.Name, item.Description, item.Price, item.Position, item.ImageURL, item.ID).
+		Scan(&item.MenuID, &item.CreatedAt)
+}
+
 func (r *Repository) CreateItem(ctx context.Context, item *MenuItem) error {
 	query := `
 		INSERT INTO menu_items (menu_id, name, description, price, position, image_url)

@@ -17,15 +17,42 @@ function formatPrice(price: number) {
 
 interface ItemTileProps {
   item: MenuItem
-  onUploaded: (item: MenuItem) => void
+  onUpdated: (item: MenuItem) => void
   onDeleted: (itemId: string) => void
 }
 
-function ItemTile({ item, onUploaded, onDeleted }: ItemTileProps) {
+function ItemTile({ item, onUpdated, onDeleted }: ItemTileProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const editFileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [editing, setEditing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const [name, setName] = useState(item.name)
+  const [description, setDescription] = useState(item.description)
+  const [price, setPrice] = useState(item.price.toString())
+  const [imageMode, setImageMode] = useState<ImageMode>('none')
+  const [imageUrl, setImageUrl] = useState('')
+  const [editFile, setEditFile] = useState<File | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  const previewUrl = imageMode === 'upload' && editFile
+    ? URL.createObjectURL(editFile)
+    : imageMode === 'url' && imageUrl.trim()
+      ? imageUrl.trim()
+      : null
+
+  function startEdit() {
+    setName(item.name)
+    setDescription(item.description)
+    setPrice(item.price.toString())
+    setImageMode(item.image_url ? 'url' : 'none')
+    setImageUrl(item.image_url || '')
+    setEditFile(null)
+    setError(null)
+    setEditing(true)
+  }
 
   async function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -34,12 +61,41 @@ function ItemTile({ item, onUploaded, onDeleted }: ItemTileProps) {
     setError(null)
     try {
       const updated = await menusApi.uploadItemImage(item.id, file)
-      onUploaded(updated)
+      onUpdated(updated)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Błąd uploadu')
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
+  async function handleSave(e: FormEvent) {
+    e.preventDefault()
+    if (!name.trim()) return
+    setSaving(true)
+    setError(null)
+    try {
+      const nextImageUrl =
+        imageMode === 'url' ? imageUrl.trim() :
+        imageMode === 'none' ? '' :
+        item.image_url
+      let updated = await menusApi.updateItem(item.id, {
+        name: name.trim(),
+        description: description.trim() || undefined,
+        price: parseFloat(price) || 0,
+        position: item.position,
+        image_url: nextImageUrl,
+      })
+      if (imageMode === 'upload' && editFile) {
+        updated = await menusApi.uploadItemImage(item.id, editFile)
+      }
+      onUpdated(updated)
+      setEditing(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Błąd zapisu')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -69,43 +125,123 @@ function ItemTile({ item, onUploaded, onDeleted }: ItemTileProps) {
             🍽️
           </div>
         )}
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={deleting}
-          aria-label="Usuń pozycję"
-          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-red-500 transition disabled:opacity-40 cursor-pointer text-sm leading-none"
-        >×</button>
-      </div>
-      <div className="p-4 flex flex-col gap-2 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <p className="font-bold text-gray-900 dark:text-white text-base flex-1">{item.name}</p>
-          <span className="text-sm font-semibold text-blue-600 shrink-0">{formatPrice(item.price)}</span>
-        </div>
-        {item.description && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{item.description}</p>
+        {!editing && (
+          <>
+            <button
+              type="button"
+              onClick={startEdit}
+              aria-label="Edytuj pozycję"
+              className="absolute top-2 right-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-blue-500 transition cursor-pointer text-xs leading-none"
+            >✎</button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              aria-label="Usuń pozycję"
+              className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-red-500 transition disabled:opacity-40 cursor-pointer text-sm leading-none"
+            >×</button>
+          </>
         )}
-        <div className="pt-2 mt-auto">
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            className="hidden"
-            onChange={handleFile}
-          />
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            fullWidth
-            loading={uploading}
-            onClick={() => inputRef.current?.click()}
-          >
-            {item.image_url ? 'Zmień zdjęcie' : '📷 Dodaj zdjęcie'}
-          </Button>
-          {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-        </div>
       </div>
+      {editing ? (
+        <form onSubmit={handleSave} className="p-4 flex flex-col gap-2 flex-1">
+          <Input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Nazwa *" required className="px-3 py-2" />
+          <Input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Opis (opcjonalnie)" className="px-3 py-2" />
+          <Input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Cena (zł)" min={0} step="0.01" className="px-3 py-2" />
+
+          <div className="flex gap-1 pt-1">
+            <button
+              type="button"
+              onClick={() => setImageMode('none')}
+              className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
+                imageMode === 'none'
+                  ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
+                  : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
+              }`}
+            >Bez zdjęcia</button>
+            <button
+              type="button"
+              onClick={() => setImageMode('url')}
+              className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
+                imageMode === 'url'
+                  ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
+                  : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
+              }`}
+            >🔗 URL</button>
+            <button
+              type="button"
+              onClick={() => setImageMode('upload')}
+              className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
+                imageMode === 'upload'
+                  ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
+                  : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
+              }`}
+            >📷 Plik</button>
+          </div>
+
+          {imageMode === 'url' && (
+            <Input
+              type="url"
+              placeholder="https://… (URL zdjęcia)"
+              value={imageUrl}
+              onChange={e => setImageUrl(e.target.value)}
+              className="px-3 py-2"
+            />
+          )}
+          {imageMode === 'upload' && (
+            <Input
+              ref={editFileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={e => setEditFile(e.target.files?.[0] ?? null)}
+              className="px-3 py-2 text-xs file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700 dark:file:bg-gray-700 dark:file:text-gray-200"
+            />
+          )}
+          {previewUrl && (
+            <div className="aspect-[4/3] rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
+              <img src={previewUrl} alt="podgląd" className="w-full h-full object-cover" />
+            </div>
+          )}
+
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          <div className="flex gap-2 pt-1 mt-auto">
+            <Button type="submit" loading={saving} fullWidth size="sm">
+              {saving ? 'Zapisywanie…' : 'Zapisz'}
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={() => setEditing(false)}>Anuluj</Button>
+          </div>
+        </form>
+      ) : (
+        <div className="p-4 flex flex-col gap-2 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <p className="font-bold text-gray-900 dark:text-white text-base flex-1">{item.name}</p>
+            <span className="text-sm font-semibold text-blue-600 shrink-0">{formatPrice(item.price)}</span>
+          </div>
+          {item.description && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{item.description}</p>
+          )}
+          <div className="pt-2 mt-auto">
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handleFile}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              fullWidth
+              loading={uploading}
+              onClick={() => inputRef.current?.click()}
+            >
+              {item.image_url ? 'Zmień zdjęcie' : '📷 Dodaj zdjęcie'}
+            </Button>
+            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+          </div>
+        </div>
+      )}
     </Card>
   )
 }
@@ -337,7 +473,7 @@ export function MenusPage() {
                     <ItemTile
                       key={item.id}
                       item={item}
-                      onUploaded={handleItemUpdated}
+                      onUpdated={handleItemUpdated}
                       onDeleted={handleItemDeleted}
                     />
                   ))}
