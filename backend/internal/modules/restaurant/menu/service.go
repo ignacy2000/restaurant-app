@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 )
 
 var (
@@ -15,13 +16,18 @@ type restaurantRepo interface {
 	FindOwnerID(ctx context.Context, id string) (string, error)
 }
 
+type imageStore interface {
+	Upload(ctx context.Context, objectKey string, r io.Reader, size int64, contentType string) (string, error)
+}
+
 type Service struct {
 	repo           *Repository
 	restaurantRepo restaurantRepo
+	images         imageStore
 }
 
-func NewService(repo *Repository, restaurantRepo restaurantRepo) *Service {
-	return &Service{repo: repo, restaurantRepo: restaurantRepo}
+func NewService(repo *Repository, restaurantRepo restaurantRepo, images imageStore) *Service {
+	return &Service{repo: repo, restaurantRepo: restaurantRepo, images: images}
 }
 
 func (s *Service) Create(ctx context.Context, restaurantID, userID string, req CreateReq) (*Response, error) {
@@ -80,6 +86,7 @@ func (s *Service) CreateItem(ctx context.Context, menuID, userID string, req Cre
 		Description: req.Description,
 		Price:       req.Price,
 		Position:    req.Position,
+		ImageURL:    req.ImageURL,
 	}
 	if err := s.repo.CreateItem(ctx, item); err != nil {
 		return nil, fmt.Errorf("create item: %w", err)
@@ -97,6 +104,43 @@ func (s *Service) GetItemsByRestaurant(ctx context.Context, restaurantID string)
 		responses[i] = *toItemResponse(&item)
 	}
 	return responses, nil
+}
+
+func (s *Service) UploadItemImage(ctx context.Context, itemID, userID string, r io.Reader, size int64, contentType, ext string) (*ItemResponse, error) {
+	restaurantID, err := s.repo.FindItemRestaurantID(ctx, itemID)
+	if err != nil {
+		return nil, fmt.Errorf("find item: %w", err)
+	}
+	if restaurantID == "" {
+		return nil, ErrNotFound
+	}
+	ownerID, err := s.restaurantRepo.FindOwnerID(ctx, restaurantID)
+	if err != nil {
+		return nil, fmt.Errorf("find owner: %w", err)
+	}
+	if ownerID != userID {
+		return nil, ErrForbidden
+	}
+
+	objectKey := fmt.Sprintf("items/%s%s", itemID, ext)
+	url, err := s.images.Upload(ctx, objectKey, r, size, contentType)
+	if err != nil {
+		return nil, fmt.Errorf("upload image: %w", err)
+	}
+	if err := s.repo.UpdateItemImageURL(ctx, itemID, url); err != nil {
+		return nil, fmt.Errorf("update image url: %w", err)
+	}
+
+	items, err := s.repo.FindItemsByRestaurantID(ctx, restaurantID)
+	if err != nil {
+		return nil, fmt.Errorf("reload items: %w", err)
+	}
+	for _, item := range items {
+		if item.ID == itemID {
+			return toItemResponse(&item), nil
+		}
+	}
+	return nil, ErrNotFound
 }
 
 func (s *Service) DeleteItem(ctx context.Context, itemID, userID string) error {
@@ -135,5 +179,6 @@ func toItemResponse(item *MenuItem) *ItemResponse {
 		Description: item.Description,
 		Price:       item.Price,
 		Position:    item.Position,
+		ImageURL:    item.ImageURL,
 	}
 }

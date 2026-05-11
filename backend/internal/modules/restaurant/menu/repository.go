@@ -44,16 +44,21 @@ func (r *Repository) FindByRestaurantID(ctx context.Context, restaurantID string
 
 func (r *Repository) CreateItem(ctx context.Context, item *MenuItem) error {
 	query := `
-		INSERT INTO menu_items (menu_id, name, description, price, position)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO menu_items (menu_id, name, description, price, position, image_url)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		RETURNING id, created_at`
-	return r.db.QueryRowContext(ctx, query, item.MenuID, item.Name, item.Description, item.Price, item.Position).
+	return r.db.QueryRowContext(ctx, query, item.MenuID, item.Name, item.Description, item.Price, item.Position, item.ImageURL).
 		Scan(&item.ID, &item.CreatedAt)
+}
+
+func (r *Repository) UpdateItemImageURL(ctx context.Context, itemID, imageURL string) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE menu_items SET image_url = $1 WHERE id = $2`, imageURL, itemID)
+	return err
 }
 
 func (r *Repository) FindItemsByRestaurantID(ctx context.Context, restaurantID string) ([]MenuItem, error) {
 	query := `
-		SELECT mi.id, mi.menu_id, mi.name, mi.description, mi.price, mi.position, mi.created_at
+		SELECT mi.id, mi.menu_id, mi.name, mi.description, mi.price, mi.position, mi.image_url, mi.created_at
 		FROM menu_items mi
 		JOIN menus m ON m.id = mi.menu_id
 		WHERE m.restaurant_id = $1
@@ -66,7 +71,7 @@ func (r *Repository) FindItemsByRestaurantID(ctx context.Context, restaurantID s
 	var results []MenuItem
 	for rows.Next() {
 		var item MenuItem
-		if err := rows.Scan(&item.ID, &item.MenuID, &item.Name, &item.Description, &item.Price, &item.Position, &item.CreatedAt); err != nil {
+		if err := rows.Scan(&item.ID, &item.MenuID, &item.Name, &item.Description, &item.Price, &item.Position, &item.ImageURL, &item.CreatedAt); err != nil {
 			return nil, fmt.Errorf("scan menu item: %w", err)
 		}
 		results = append(results, item)

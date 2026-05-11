@@ -26,4 +26,13 @@ export const menusApi = {
 
   deleteItem: (itemId: string) =>
     authedHttp<void>(`/menu-items/${itemId}`, { method: 'DELETE' }),
+
+  uploadItemImage: (itemId: string, file: File) => {
+    const form = new FormData()
+    form.append('image', file)
+    return authedHttp<MenuItem>(`/menu-items/${itemId}/image`, {
+      method: 'POST',
+      body: form,
+    })
+  },
 }

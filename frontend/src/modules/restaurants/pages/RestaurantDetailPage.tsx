@@ -16,7 +16,7 @@ const modules = [
     key: 'menus',
     icon: '🍽️',
     label: 'Menu',
-    description: 'Zarządzaj kartami menu restauracji',
+    description: 'Karty menu, pozycje i zdjęcia dań',
     path: (id: string) => `/restaurants/${id}/menus`,
   },
   {

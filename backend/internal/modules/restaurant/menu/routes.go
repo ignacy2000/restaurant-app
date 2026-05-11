@@ -9,5 +9,6 @@ func Mount(r *gin.RouterGroup, auth gin.HandlerFunc, h *Handler) {
 	protected := r.Group("", auth)
 	protected.POST("/restaurants/:id/menus", h.Create)
 	protected.POST("/menus/:menuId/items", h.CreateItem)
+	protected.POST("/menu-items/:itemId/image", h.UploadItemImage)
 	protected.DELETE("/menu-items/:itemId", h.DeleteItem)
 }

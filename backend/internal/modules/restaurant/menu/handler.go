@@ -3,10 +3,22 @@ package menu
 import (
 	"errors"
 	"net/http"
+	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"table-service.pl/pkg/middleware"
 )
+
+var allowedImageExts = map[string]string{
+	".jpg":  "image/jpeg",
+	".jpeg": "image/jpeg",
+	".png":  "image/png",
+	".webp": "image/webp",
+	".gif":  "image/gif",
+}
+
+const maxImageSize = 5 << 20 // 5 MiB
 
 type Handler struct {
 	svc *Service
@@ -83,6 +95,54 @@ func (h *Handler) CreateItem(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, resp)
+}
+
+func (h *Handler) UploadItemImage(c *gin.Context) {
+	userID := c.GetString(middleware.UserIDKey)
+	itemID := c.Param("itemId")
+
+	if err := c.Request.ParseMultipartForm(maxImageSize); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid form"})
+		return
+	}
+
+	fileHeader, err := c.FormFile("image")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing image file"})
+		return
+	}
+	if fileHeader.Size > maxImageSize {
+		c.JSON(http.StatusRequestEntityTooLarge, gin.H{"error": "image too large (max 5MB)"})
+		return
+	}
+
+	ext := strings.ToLower(filepath.Ext(fileHeader.Filename))
+	contentType, ok := allowedImageExts[ext]
+	if !ok {
+		c.JSON(http.StatusUnsupportedMediaType, gin.H{"error": "unsupported image type"})
+		return
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "cannot read file"})
+		return
+	}
+	defer file.Close()
+
+	resp, err := h.svc.UploadItemImage(c.Request.Context(), itemID, userID, file, fileHeader.Size, contentType, ext)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrNotFound):
+			c.JSON(http.StatusNotFound, gin.H{"error": "item not found"})
+		case errors.Is(err, ErrForbidden):
+			c.JSON(http.StatusForbidden, gin.H{"error": "not the restaurant owner"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		}
+		return
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
 func (h *Handler) DeleteItem(c *gin.Context) {

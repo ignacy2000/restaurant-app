@@ -111,7 +111,7 @@ func TestMenuRepository_CreateItem(t *testing.T) {
 	now := time.Now()
 
 	mock.ExpectQuery(`INSERT INTO menu_items`).
-		WithArgs("menu-1", "Pasta", "Classic pasta", 12.50, 1).
+		WithArgs("menu-1", "Pasta", "Classic pasta", 12.50, 1, "").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "created_at"}).
 			AddRow("item-1", now))
 
@@ -140,9 +140,9 @@ func TestMenuRepository_FindItemsByRestaurantID(t *testing.T) {
 
 	mock.ExpectQuery(`FROM menu_items mi`).
 		WithArgs("rest-1").
-		WillReturnRows(sqlmock.NewRows([]string{"id", "menu_id", "name", "description", "price", "position", "created_at"}).
-			AddRow("item-1", "menu-1", "Pasta", "Classic", 12.50, 1, now).
-			AddRow("item-2", "menu-1", "Pizza", "Margherita", 10.00, 2, now))
+		WillReturnRows(sqlmock.NewRows([]string{"id", "menu_id", "name", "description", "price", "position", "image_url", "created_at"}).
+			AddRow("item-1", "menu-1", "Pasta", "Classic", 12.50, 1, "", now).
+			AddRow("item-2", "menu-1", "Pizza", "Margherita", 10.00, 2, "", now))
 
 	items, err := repo.FindItemsByRestaurantID(context.Background(), "rest-1")
 	if err != nil {

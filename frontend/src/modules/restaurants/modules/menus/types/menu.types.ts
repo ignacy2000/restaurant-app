@@ -18,6 +18,7 @@ export interface MenuItem {
   description: string
   price: number
   position: number
+  image_url: string
 }
 
 export interface CreateMenuItemReq {
@@ -25,4 +26,5 @@ export interface CreateMenuItemReq {
   description?: string
   price: number
   position?: number
+  image_url?: string
 }

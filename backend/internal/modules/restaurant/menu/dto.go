@@ -18,6 +18,7 @@ type CreateItemReq struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 	Position    int     `json:"position"`
+	ImageURL    string  `json:"image_url"`
 }
 
 type ItemResponse struct {
@@ -27,4 +28,5 @@ type ItemResponse struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 	Position    int     `json:"position"`
+	ImageURL    string  `json:"image_url"`
 }

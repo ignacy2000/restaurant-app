@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"time"
@@ -17,6 +18,7 @@ import (
 	"table-service.pl/pkg/logger"
 	"table-service.pl/pkg/mailer"
 	"table-service.pl/pkg/middleware"
+	"table-service.pl/pkg/storage"
 	"table-service.pl/pkg/worker"
 	"table-service.pl/pkg/ws"
 )
@@ -41,6 +43,22 @@ func main() {
 
 	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: cfg.RedisAddr})
 	defer asynqClient.Close()
+
+	imageStore, err := storage.New(storage.Config{
+		Endpoint:       cfg.S3Endpoint,
+		PublicEndpoint: cfg.S3PublicEndpoint,
+		AccessKey:      cfg.S3AccessKey,
+		SecretKey:      cfg.S3SecretKey,
+		Bucket:         cfg.S3Bucket,
+		UseSSL:         cfg.S3UseSSL,
+	})
+	if err != nil {
+		log.Error("init storage", "error", err)
+		os.Exit(1)
+	}
+	if err := imageStore.EnsureBucket(context.Background()); err != nil {
+		log.Error("ensure bucket", "error", err)
+	}
 
 	mail := mailer.New(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPFrom, cfg.SMTPUsername, cfg.SMTPPassword)
 	proc := worker.NewEmailProcessor(mail)
@@ -75,7 +93,7 @@ func main() {
 	api := r.Group("/api")
 	userModule.Mount(api, authMw, userHandler)
 	authModule.Mount(api, authMw, authHandler)
-	restaurantModule.MountAll(api, authMw, db, hub, cfg.JWTSecret, mail, cfg.FrontendURL)
+	restaurantModule.MountAll(api, authMw, db, hub, cfg.JWTSecret, mail, cfg.FrontendURL, imageStore)
 
 	log.Info("server starting", "port", cfg.Port)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {

@@ -15,6 +15,23 @@ restaurant-app/
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) (uruchomione)
 - [Tilt](https://docs.tilt.dev/install.html): `brew install tilt-dev/tap/tilt`
 
+Do pracy lokalnej (bez kontenerów — IDE intellisense, testy, lint):
+
+- [Go](https://go.dev/dl/) 1.26+ (zgodnie z [backend/go.mod](backend/go.mod))
+- [Bun](https://bun.sh) 1.3+: `brew install oven-sh/bun/bun`
+
+## Instalacja zależności
+
+Dla `tilt up` / `docker compose up` to nie jest potrzebne — obrazy instalują wszystko same. Te kroki są pod IDE i odpalanie testów spoza kontenera.
+
+```bash
+# backend
+cd backend && go mod download
+
+# frontend
+cd frontend && bun install --frozen-lockfile
+```
+
 ## Uruchomienie
 
 ```bash

@@ -1,7 +1,9 @@
 package restaurant
 
 import (
+	"context"
 	"database/sql"
+	"io"
 
 	"github.com/gin-gonic/gin"
 	callModule "table-service.pl/internal/modules/restaurant/call"
@@ -13,9 +15,13 @@ import (
 	"table-service.pl/pkg/ws"
 )
 
+type ImageStore interface {
+	Upload(ctx context.Context, objectKey string, r io.Reader, size int64, contentType string) (string, error)
+}
+
 // MountAll wires and registers all restaurant sub-modules
 // (restaurant, menu, table, order, call, websocket) under the given api group.
-func MountAll(api *gin.RouterGroup, authMw gin.HandlerFunc, db *sql.DB, hub *ws.Hub, jwtSecret string, mail *mailer.Mailer, frontendURL string) {
+func MountAll(api *gin.RouterGroup, authMw gin.HandlerFunc, db *sql.DB, hub *ws.Hub, jwtSecret string, mail *mailer.Mailer, frontendURL string, images ImageStore) {
 	restaurantRepo := NewRepository(db)
 	menuRepo := menuModule.NewRepository(db)
 	tableRepo := tableModule.NewRepository(db)
@@ -23,7 +29,7 @@ func MountAll(api *gin.RouterGroup, authMw gin.HandlerFunc, db *sql.DB, hub *ws.
 	callRepo := callModule.NewRepository(db)
 
 	restaurantSvc := NewService(restaurantRepo)
-	menuSvc := menuModule.NewService(menuRepo, restaurantRepo)
+	menuSvc := menuModule.NewService(menuRepo, restaurantRepo, images)
 	tableSvc := tableModule.NewService(tableRepo, restaurantRepo)
 	orderSvc := orderModule.NewService(orderRepo, tableRepo, hub, restaurantRepo, mail, frontendURL)
 	callSvc := callModule.NewService(callRepo, tableRepo, hub)

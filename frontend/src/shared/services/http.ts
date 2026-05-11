@@ -10,9 +10,11 @@ export class HttpError extends Error {
 }
 
 export async function http<T>(path: string, options?: RequestInit): Promise<T> {
+  const isFormData = typeof FormData !== 'undefined' && options?.body instanceof FormData
+  const baseHeaders: Record<string, string> = isFormData ? {} : { 'Content-Type': 'application/json' }
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
+    headers: { ...baseHeaders, ...options?.headers },
   })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))

@@ -18,5 +18,6 @@ type MenuItem struct {
 	Description string
 	Price       float64
 	Position    int
+	ImageURL    string
 	CreatedAt   time.Time
 }
