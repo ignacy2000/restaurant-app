@@ -1,6 +1,8 @@
 import { useState, FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { authApi } from '../services/auth.api'
+import { validateResetPassword, AUTH_LIMITS } from '../services/validation'
+import { token as tokenSchema } from '../../../shared/utils/validation'
 import { Alert } from '../../../shared/components/Alert'
 import { Button } from '../../../shared/components/Button'
 import { FormField } from '../../../shared/components/FormField'
@@ -9,7 +11,9 @@ import { Input } from '../../../shared/components/Input'
 export function ResetPasswordForm() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const token = searchParams.get('token') ?? ''
+  const rawToken = searchParams.get('token') ?? ''
+  const parsedToken = tokenSchema.safeParse(rawToken)
+  const token = parsedToken.success ? parsedToken.data : ''
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -18,17 +22,12 @@ export function ResetPasswordForm() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    const validationError = validateResetPassword({ password, confirm })
+    if (validationError) {
+      setError(validationError)
+      return
+    }
     setError('')
-
-    if (password !== confirm) {
-      setError('Hasła nie są zgodne')
-      return
-    }
-    if (password.length < 8) {
-      setError('Hasło musi mieć co najmniej 8 znaków')
-      return
-    }
-
     setLoading(true)
     try {
       await authApi.resetPassword(token, password)
@@ -71,10 +70,12 @@ export function ResetPasswordForm() {
           id="password"
           type="password"
           autoComplete="new-password"
+          minLength={AUTH_LIMITS.passwordMin}
+          maxLength={AUTH_LIMITS.passwordMax}
           required
           value={password}
           onChange={e => setPassword(e.target.value)}
-          placeholder="Minimum 8 znaków"
+          placeholder={`Minimum ${AUTH_LIMITS.passwordMin} znaków`}
         />
       </FormField>
 
@@ -83,6 +84,7 @@ export function ResetPasswordForm() {
           id="confirm"
           type="password"
           autoComplete="new-password"
+          maxLength={AUTH_LIMITS.passwordMax}
           required
           value={confirm}
           onChange={e => setConfirm(e.target.value)}

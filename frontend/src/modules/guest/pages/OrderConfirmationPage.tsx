@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { ordersApi } from '../../restaurants/modules/orders/services/orders.api'
 import type { ConfirmOrderResponse } from '../../restaurants/modules/orders/services/orders.api'
+import { token as tokenSchema } from '../../../shared/utils/validation'
 import { Spinner } from '../../../shared/components/Spinner'
 
 export function OrderConfirmationPage() {
@@ -13,11 +14,12 @@ export function OrderConfirmationPage() {
   const calledRef = useRef(false)
 
   useEffect(() => {
-    if (!token) { setState('error'); return }
+    const parsed = tokenSchema.safeParse(token)
+    if (!parsed.success) { setState('error'); return }
     if (calledRef.current) return
     calledRef.current = true
 
-    ordersApi.confirmOrder(token)
+    ordersApi.confirmOrder(parsed.data)
       .then(res => { setData(res); setState('success') })
       .catch(() => setState('error'))
   }, [token])

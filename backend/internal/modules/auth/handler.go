@@ -71,7 +71,7 @@ func (h *Handler) Refresh(c *gin.Context) {
 
 func (h *Handler) ForgotPassword(c *gin.Context) {
 	var req struct {
-		Email string `json:"email" binding:"required,email"`
+		Email string `json:"email" binding:"required,email,max=320"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -84,8 +84,8 @@ func (h *Handler) ForgotPassword(c *gin.Context) {
 
 func (h *Handler) ResetPassword(c *gin.Context) {
 	var req struct {
-		Token    string `json:"token"    binding:"required"`
-		Password string `json:"password" binding:"required,min=8"`
+		Token    string `json:"token"    binding:"required,max=2048"`
+		Password string `json:"password" binding:"required,min=8,max=128"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -113,7 +113,7 @@ func (h *Handler) ListOrigins(c *gin.Context) {
 
 func (h *Handler) AddOrigin(c *gin.Context) {
 	var req struct {
-		Origin string `json:"origin" binding:"required,url"`
+		Origin string `json:"origin" binding:"required,url,max=2048"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

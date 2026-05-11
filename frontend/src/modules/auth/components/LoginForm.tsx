@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { validateLogin, AUTH_LIMITS } from '../services/validation'
 import { Alert } from '../../../shared/components/Alert'
 import { Button } from '../../../shared/components/Button'
 import { FormField } from '../../../shared/components/FormField'
@@ -18,6 +19,11 @@ export function LoginForm() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    const validationError = validateLogin({ email, password })
+    if (validationError) {
+      setError(validationError)
+      return
+    }
     setError('')
     setLoading(true)
     try {
@@ -40,6 +46,7 @@ export function LoginForm() {
           id="email"
           type="email"
           autoComplete="email"
+          maxLength={AUTH_LIMITS.emailMax}
           required
           value={email}
           onChange={e => setEmail(e.target.value)}
@@ -52,6 +59,7 @@ export function LoginForm() {
           id="password"
           type="password"
           autoComplete="current-password"
+          maxLength={AUTH_LIMITS.passwordMax}
           required
           value={password}
           onChange={e => setPassword(e.target.value)}
