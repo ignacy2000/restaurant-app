@@ -1,7 +1,7 @@
 package call
 
 type UpdateStatusReq struct {
-	Status CallStatus `json:"status" binding:"required"`
+	Status CallStatus `json:"status" binding:"required,oneof=pending acknowledged done"`
 }
 
 type Response struct {

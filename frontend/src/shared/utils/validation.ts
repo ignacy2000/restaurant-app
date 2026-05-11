@@ -4,6 +4,7 @@ export const LIMITS = {
   nameMax: 255,
   descriptionMax: 2000,
   urlMax: 2048,
+  emailMax: 320,
 } as const
 
 export const requiredName = (max: number = LIMITS.nameMax) =>
@@ -25,6 +26,9 @@ export const httpUrl = z.string()
       return false
     }
   }, 'URL musi zaczynać się od http:// lub https://')
+
+export const email = z.email('Niepoprawny adres email')
+  .max(LIMITS.emailMax, `Email maks. ${LIMITS.emailMax} znaków`)
 
 export function firstError(error: z.ZodError): string {
   return error.issues[0]?.message ?? 'Niepoprawne dane'

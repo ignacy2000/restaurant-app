@@ -1,12 +1,12 @@
 package table
 
 type CreateReq struct {
-	Number   int `json:"number"   binding:"required,min=1"`
-	Capacity int `json:"capacity" binding:"required,min=1"`
+	Number   int `json:"number"   binding:"required,min=1,max=9999"`
+	Capacity int `json:"capacity" binding:"required,min=1,max=100"`
 }
 
 type UpdateReq struct {
-	Capacity int `json:"capacity" binding:"required,min=1"`
+	Capacity int `json:"capacity" binding:"required,min=1,max=100"`
 }
 
 type Response struct {

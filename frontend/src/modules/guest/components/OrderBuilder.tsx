@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { menusApi } from '../../restaurants/modules/menus'
 import type { MenuItem } from '../../restaurants/modules/menus'
 import type { CreateOrderItemReq } from '../../restaurants/modules/orders/types/order.types'
+import { validateCreateOrder, ORDER_LIMITS } from '../../restaurants/modules/orders'
 import { Spinner } from '../../../shared/components/Spinner'
 import { Input } from '../../../shared/components/Input'
 import { Button } from '../../../shared/components/Button'
@@ -61,15 +62,20 @@ export function OrderBuilder({ restaurantId, onSubmit }: Props) {
   }
 
   async function handleSubmit() {
-    if (cart.length === 0 || !guestEmail) return
+    const items = cart.map(({ item, quantity }) => ({ name: item.name, quantity }))
+    const validationError = validateCreateOrder({
+      items,
+      notes: orderNotes,
+      guestEmail: guestEmail.trim(),
+    })
+    if (validationError) {
+      setSubmitError(validationError)
+      return
+    }
     setSubmitError('')
     setSubmitting(true)
     try {
-      await onSubmit(
-        cart.map(({ item, quantity }) => ({ name: item.name, quantity })),
-        orderNotes,
-        guestEmail
-      )
+      await onSubmit(items, orderNotes, guestEmail.trim())
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Błąd składania zamówienia')
       setSubmitting(false)
@@ -159,6 +165,7 @@ export function OrderBuilder({ restaurantId, onSubmit }: Props) {
           <Input
             type="email"
             placeholder="Adres e-mail (wymagany do potwierdzenia)"
+            maxLength={ORDER_LIMITS.emailMax}
             value={guestEmail}
             onChange={e => setGuestEmail(e.target.value)}
             required
@@ -166,6 +173,7 @@ export function OrderBuilder({ restaurantId, onSubmit }: Props) {
           <Input
             type="text"
             placeholder="Uwagi do zamówienia (opcjonalnie)"
+            maxLength={ORDER_LIMITS.orderNotesMax}
             value={orderNotes}
             onChange={e => setOrderNotes(e.target.value)}
           />

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import type { Table } from '../types/table.types'
+import { validateUpdateTable, TABLE_LIMITS } from '../services/validation'
 import { Button } from '../../../../../shared/components/Button'
 import { Card } from '../../../../../shared/components/Card'
 
@@ -32,7 +33,11 @@ export function TableCard({ table, restaurantId, onUpdateCapacity, onDelete }: P
   const guestUrl = `${window.location.origin}/table/${restaurantId}/${table.id}`
 
   async function handleSave() {
-    if (capacity < 1) return
+    const validationError = validateUpdateTable({ capacity })
+    if (validationError) {
+      setError(validationError)
+      return
+    }
     setSaving(true)
     setError('')
     try {
@@ -108,7 +113,8 @@ export function TableCard({ table, restaurantId, onUpdateCapacity, onDelete }: P
             <div className="flex items-center gap-2">
               <input
                 type="number"
-                min={1}
+                min={TABLE_LIMITS.capacityMin}
+                max={TABLE_LIMITS.capacityMax}
                 value={capacity}
                 onChange={e => setCapacity(Number(e.target.value))}
                 className="w-24 px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-blue-900/30"

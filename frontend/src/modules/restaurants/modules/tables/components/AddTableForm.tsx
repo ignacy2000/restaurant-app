@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react'
 import type { CreateTableReq } from '../types/table.types'
+import { validateCreateTable, TABLE_LIMITS } from '../services/validation'
 import { Alert } from '../../../../../shared/components/Alert'
 import { Button } from '../../../../../shared/components/Button'
 import { Card } from '../../../../../shared/components/Card'
@@ -19,10 +20,16 @@ export function AddTableForm({ onSubmit, onCancel }: Props) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    const data = { number: Number(number), capacity: Number(capacity) }
+    const validationError = validateCreateTable(data)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
     setError('')
     setLoading(true)
     try {
-      await onSubmit({ number: Number(number), capacity: Number(capacity) })
+      await onSubmit(data)
       setNumber('')
       setCapacity('')
     } catch (err) {
@@ -43,7 +50,8 @@ export function AddTableForm({ onSubmit, onCancel }: Props) {
             <Input
               id="t-number"
               type="number"
-              min={1}
+              min={TABLE_LIMITS.numberMin}
+              max={TABLE_LIMITS.numberMax}
               required
               value={number}
               onChange={e => setNumber(e.target.value)}
@@ -54,7 +62,8 @@ export function AddTableForm({ onSubmit, onCancel }: Props) {
             <Input
               id="t-capacity"
               type="number"
-              min={1}
+              min={TABLE_LIMITS.capacityMin}
+              max={TABLE_LIMITS.capacityMax}
               required
               value={capacity}
               onChange={e => setCapacity(e.target.value)}
