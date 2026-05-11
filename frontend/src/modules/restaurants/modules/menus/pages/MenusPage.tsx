@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useMenus } from '../hooks/useMenus'
 import { menusApi } from '../services/menus.api'
 import { AddMenuForm } from '../components/AddMenuForm'
+import { LIMITS, validateItemFields } from '../services/validation'
 import { Alert } from '../../../../../shared/components/Alert'
 import { Button } from '../../../../../shared/components/Button'
 import { Card } from '../../../../../shared/components/Card'
@@ -72,7 +73,15 @@ function ItemTile({ item, onUpdated, onDeleted }: ItemTileProps) {
 
   async function handleSave(e: FormEvent) {
     e.preventDefault()
-    if (!name.trim()) return
+    const validationError = validateItemFields({ name, description, price, imageMode, imageUrl, file: editFile })
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+    if (imageMode === 'upload' && !editFile && !item.image_url) {
+      setError('Wybierz plik zdjęcia lub zmień tryb')
+      return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -145,9 +154,9 @@ function ItemTile({ item, onUpdated, onDeleted }: ItemTileProps) {
       </div>
       {editing ? (
         <form onSubmit={handleSave} className="p-4 flex flex-col gap-2 flex-1">
-          <Input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Nazwa *" required className="px-3 py-2" />
-          <Input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Opis (opcjonalnie)" className="px-3 py-2" />
-          <Input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Cena (zł)" min={0} step="0.01" className="px-3 py-2" />
+          <Input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Nazwa *" maxLength={LIMITS.nameMax} required className="px-3 py-2" />
+          <Input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Opis (opcjonalnie)" maxLength={LIMITS.descriptionMax} className="px-3 py-2" />
+          <Input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Cena (zł)" min={0} max={LIMITS.priceMax} step="0.01" className="px-3 py-2" />
 
           <div className="flex gap-1 pt-1">
             <button
@@ -183,6 +192,7 @@ function ItemTile({ item, onUpdated, onDeleted }: ItemTileProps) {
             <Input
               type="url"
               placeholder="https://… (URL zdjęcia)"
+              maxLength={LIMITS.imageUrlMax}
               value={imageUrl}
               onChange={e => setImageUrl(e.target.value)}
               className="px-3 py-2"
@@ -275,7 +285,15 @@ function AddItemForm({ onSubmit, onCancel }: AddItemFormProps) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (!name.trim()) return
+    const validationError = validateItemFields({ name, description, price, imageMode, imageUrl, file })
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+    if (imageMode === 'upload' && !file) {
+      setError('Wybierz plik zdjęcia lub zmień tryb')
+      return
+    }
     setSaving(true)
     setError(null)
     try {
@@ -304,9 +322,9 @@ function AddItemForm({ onSubmit, onCancel }: AddItemFormProps) {
   return (
     <Card className="p-4">
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <Input type="text" placeholder="Nazwa dania *" value={name} onChange={e => setName(e.target.value)} required className="px-3 py-2" />
-        <Input type="text" placeholder="Opis (opcjonalnie)" value={description} onChange={e => setDescription(e.target.value)} className="px-3 py-2" />
-        <Input type="number" placeholder="Cena (zł)" value={price} onChange={e => setPrice(e.target.value)} min={0} step="0.01" className="px-3 py-2" />
+        <Input type="text" placeholder="Nazwa dania *" maxLength={LIMITS.nameMax} value={name} onChange={e => setName(e.target.value)} required className="px-3 py-2" />
+        <Input type="text" placeholder="Opis (opcjonalnie)" maxLength={LIMITS.descriptionMax} value={description} onChange={e => setDescription(e.target.value)} className="px-3 py-2" />
+        <Input type="number" placeholder="Cena (zł)" value={price} onChange={e => setPrice(e.target.value)} min={0} max={LIMITS.priceMax} step="0.01" className="px-3 py-2" />
 
         <div className="flex gap-1 pt-1">
           <button
@@ -342,6 +360,7 @@ function AddItemForm({ onSubmit, onCancel }: AddItemFormProps) {
           <Input
             type="url"
             placeholder="https://… (URL zdjęcia)"
+            maxLength={LIMITS.imageUrlMax}
             value={imageUrl}
             onChange={e => setImageUrl(e.target.value)}
             className="px-3 py-2"

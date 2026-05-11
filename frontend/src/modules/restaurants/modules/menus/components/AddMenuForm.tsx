@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react'
 import type { CreateMenuReq } from '../types/menu.types'
+import { LIMITS, validateMenuFields } from '../services/validation'
 import { Alert } from '../../../../../shared/components/Alert'
 import { Button } from '../../../../../shared/components/Button'
 import { Card } from '../../../../../shared/components/Card'
@@ -20,10 +21,15 @@ export function AddMenuForm({ onSubmit, onCancel }: Props) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    const validationError = validateMenuFields(name, description)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
     setError('')
     setLoading(true)
     try {
-      await onSubmit({ name, description })
+      await onSubmit({ name: name.trim(), description: description.trim() })
       setName('')
       setDescription('')
     } catch (err) {
@@ -44,6 +50,7 @@ export function AddMenuForm({ onSubmit, onCancel }: Props) {
             id="m-name"
             type="text"
             required
+            maxLength={LIMITS.nameMax}
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="np. Karta dań, Lunch, Sezonowe"
@@ -54,6 +61,7 @@ export function AddMenuForm({ onSubmit, onCancel }: Props) {
           <Textarea
             id="m-desc"
             rows={3}
+            maxLength={LIMITS.descriptionMax}
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Krótki opis menu (opcjonalnie)"
