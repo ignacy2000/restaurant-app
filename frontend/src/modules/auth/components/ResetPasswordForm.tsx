@@ -1,12 +1,9 @@
 import { useState, FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { authApi } from '../services/auth.api'
 import { validateResetPassword, AUTH_LIMITS } from '../services/validation'
 import { token as tokenSchema } from '../../../shared/utils/validation'
-import { Alert } from '../../../shared/components/Alert'
-import { Button } from '../../../shared/components/Button'
-import { FormField } from '../../../shared/components/FormField'
-import { Input } from '../../../shared/components/Input'
+import { Alert, Button, FormField, Input, Link, Stack, Text } from '../../../shared/components'
 
 export function ResetPasswordForm() {
   const navigate = useNavigate()
@@ -41,60 +38,64 @@ export function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="space-y-4">
+      <Stack gap={4}>
         <Alert>Brak tokenu resetowania. Upewnij się, że użyłeś linku z e-maila.</Alert>
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 pt-1">
-          <Link to="/forgot-password" className="text-blue-600 font-medium hover:underline">
+        <Text size="sm" tone="muted" align="center" className="pt-1">
+          <Link to="/forgot-password" size="sm">
             Wyślij link ponownie
           </Link>
-        </p>
-      </div>
+        </Text>
+      </Stack>
     )
   }
 
+  const isExpiredOrInvalid = error.toLowerCase().includes('wygasł') || error.toLowerCase().includes('nieprawidłowy')
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <Alert>
-          {error}{' '}
-          {error.toLowerCase().includes('wygasł') || error.toLowerCase().includes('nieprawidłowy') ? (
-            <Link to="/forgot-password" className="font-medium underline">
-              Wyślij link ponownie
-            </Link>
-          ) : null}
-        </Alert>
-      )}
+    <form onSubmit={handleSubmit}>
+      <Stack gap={4}>
+        {error && (
+          <Alert>
+            {error}{' '}
+            {isExpiredOrInvalid ? (
+              <Link to="/forgot-password" variant="inherit" size="sm" underline>
+                Wyślij link ponownie
+              </Link>
+            ) : null}
+          </Alert>
+        )}
 
-      <FormField label="Nowe hasło" htmlFor="password">
-        <Input
-          id="password"
-          type="password"
-          autoComplete="new-password"
-          minLength={AUTH_LIMITS.passwordMin}
-          maxLength={AUTH_LIMITS.passwordMax}
-          required
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          placeholder={`Minimum ${AUTH_LIMITS.passwordMin} znaków`}
-        />
-      </FormField>
+        <FormField label="Nowe hasło" htmlFor="password">
+          <Input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            minLength={AUTH_LIMITS.passwordMin}
+            maxLength={AUTH_LIMITS.passwordMax}
+            required
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder={`Minimum ${AUTH_LIMITS.passwordMin} znaków`}
+          />
+        </FormField>
 
-      <FormField label="Potwierdź nowe hasło" htmlFor="confirm">
-        <Input
-          id="confirm"
-          type="password"
-          autoComplete="new-password"
-          maxLength={AUTH_LIMITS.passwordMax}
-          required
-          value={confirm}
-          onChange={e => setConfirm(e.target.value)}
-          placeholder="••••••••"
-        />
-      </FormField>
+        <FormField label="Potwierdź nowe hasło" htmlFor="confirm">
+          <Input
+            id="confirm"
+            type="password"
+            autoComplete="new-password"
+            maxLength={AUTH_LIMITS.passwordMax}
+            required
+            value={confirm}
+            onChange={e => setConfirm(e.target.value)}
+            placeholder="••••••••"
+          />
+        </FormField>
 
-      <Button type="submit" loading={loading} fullWidth size="lg">
-        {loading ? 'Zapisywanie…' : 'Ustaw nowe hasło'}
-      </Button>
+        <Button type="submit" loading={loading} fullWidth size="lg">
+          {loading ? 'Zapisywanie…' : 'Ustaw nowe hasło'}
+        </Button>
+      </Stack>
     </form>
   )
 }

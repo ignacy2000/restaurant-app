@@ -3,10 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { useRestaurants } from '../hooks/useRestaurants'
 import { RestaurantCard } from '../components/RestaurantCard'
 import { CreateRestaurantForm } from '../components/CreateRestaurantForm'
-import { Alert } from '../../../shared/components/Alert'
-import { Button } from '../../../shared/components/Button'
-import { EmptyState } from '../../../shared/components/EmptyState'
-import { Spinner } from '../../../shared/components/Spinner'
+import {
+  Alert,
+  Box,
+  Button,
+  Container,
+  EmptyState,
+  Grid,
+  Spinner,
+  Stack,
+  Title,
+} from '../../../shared/components'
 import type { CreateRestaurantReq } from '../types/restaurant.types'
 
 export function DashboardPage() {
@@ -21,19 +28,19 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 pb-12">
+    <Container maxWidth="6xl" padding="none" className="px-6 py-8 pb-12">
       {loading ? (
         <Spinner />
       ) : error ? (
         <Alert>{error}</Alert>
       ) : (
-        <>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-bold dark:text-white">Moje restauracje</h2>
+        <Box>
+          <Stack direction="row" align="center" justify="between" className="mb-5">
+            <Title level={2} size="lg">Moje restauracje</Title>
             {restaurants.length > 0 && !showForm && (
               <Button onClick={() => setShowForm(true)}>+ Dodaj nową</Button>
             )}
-          </div>
+          </Stack>
 
           {showForm && (
             <CreateRestaurantForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
@@ -47,12 +54,12 @@ export function DashboardPage() {
               action={<Button size="lg" onClick={() => setShowForm(true)}>+ Utwórz pierwszą restaurację</Button>}
             />
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Grid cols={1} responsive={{ sm: 2, lg: 3 }} gap={4}>
               {restaurants.map(r => <RestaurantCard key={r.id} restaurant={r} />)}
-            </div>
+            </Grid>
           )}
-        </>
+        </Box>
       )}
-    </div>
+    </Container>
   )
 }

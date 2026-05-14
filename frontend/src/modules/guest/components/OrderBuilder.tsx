@@ -3,10 +3,19 @@ import { menusApi } from '../../restaurants/modules/menus'
 import type { MenuItem } from '../../restaurants/modules/menus'
 import type { CreateOrderItemReq } from '../../restaurants/modules/orders/types/order.types'
 import { validateCreateOrder, ORDER_LIMITS } from '../../restaurants/modules/orders'
-import { Spinner } from '../../../shared/components/Spinner'
-import { Input } from '../../../shared/components/Input'
-import { Button } from '../../../shared/components/Button'
-import { Alert } from '../../../shared/components/Alert'
+import { cn } from '../../../shared/utils/cn'
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Grid,
+  Input,
+  Spinner,
+  Stack,
+  Text,
+} from '../../../shared/components'
 
 interface CartEntry {
   item: MenuItem
@@ -84,83 +93,104 @@ export function OrderBuilder({ restaurantId, onSubmit }: Props) {
 
   const totalPrice = cart.reduce((sum, e) => sum + e.item.price * e.quantity, 0)
 
-  if (itemsLoading) return <div className="flex justify-center py-8"><Spinner /></div>
+  if (itemsLoading) return <Spinner />
 
   if (menuItems.length === 0) {
     return (
-      <div className="flex flex-col items-center text-center py-12">
-        <span className="text-4xl mb-3 opacity-40">🍽️</span>
-        <p className="font-semibold text-gray-700 dark:text-gray-300">Menu nie jest jeszcze skonfigurowane</p>
-        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Zapytaj obsługę o dostępne dania</p>
-      </div>
+      <EmptyState
+        icon="🍽️"
+        title="Menu nie jest jeszcze skonfigurowane"
+        description="Zapytaj obsługę o dostępne dania"
+      />
     )
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-3">
+    <Stack gap={6}>
+      <Grid cols={2} gap={3}>
         {menuItems.map(item => {
           const inCart = cart.find(e => e.item.id === item.id)
           return (
-            <button
+            <Button
               key={item.id}
+              variant="ghost"
               onClick={() => addToCart(item)}
-              className={
-                'relative text-left bg-white dark:bg-gray-800 border rounded-xl p-4 flex flex-col gap-1 transition cursor-pointer ' +
-                (inCart
-                  ? 'border-blue-400 dark:border-blue-500 shadow-sm shadow-blue-100 dark:shadow-blue-900/30'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm')
-              }
+              className={cn(
+                'relative flex flex-col items-stretch justify-start gap-1 p-4 rounded-[14px] border whitespace-normal text-left font-normal',
+                'bg-[var(--ios-surface)] hover:bg-[var(--ios-surface)]',
+                inCart
+                  ? 'border-[var(--ios-blue)]'
+                  : 'border-[var(--ios-border)] hover:border-[var(--ios-blue)]'
+              )}
             >
               {inCart && (
-                <span className="absolute top-2 right-2 w-5 h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                <Badge
+                  color="blue"
+                  className="absolute top-2 right-2 w-5 h-5 px-0 justify-center bg-[var(--ios-blue)] text-white"
+                >
                   {inCart.quantity}
-                </span>
+                </Badge>
               )}
-              <p className="font-semibold text-gray-900 dark:text-white text-sm pr-6 leading-tight">{item.name}</p>
+              <Text size="sm" weight="semibold" className="pr-6 leading-tight">
+                {item.name}
+              </Text>
               {item.description && (
-                <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight line-clamp-2">{item.description}</p>
+                <Text size="xs" tone="subtle" className="leading-tight line-clamp-2">
+                  {item.description}
+                </Text>
               )}
-              <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-auto pt-2">{formatPrice(item.price)}</p>
-            </button>
+              <Text size="sm" weight="bold" tone="primary" className="mt-auto pt-2">
+                {formatPrice(item.price)}
+              </Text>
+            </Button>
           )
         })}
-      </div>
+      </Grid>
 
       {cart.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Koszyk</p>
+        <Stack gap={4}>
+          <Stack gap={2}>
+            <Text size="sm" weight="semibold" tone="muted">Koszyk</Text>
             {cart.map(({ item, quantity }) => (
-              <div key={item.id} className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{item.name}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">{formatPrice(item.price * quantity)}</p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => setQuantity(item.id, -1)}
-                    className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-bold text-base flex items-center justify-center transition cursor-pointer"
-                  >−</button>
-                  <span className="w-6 text-center text-sm font-bold text-gray-900 dark:text-white">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(item.id, 1)}
-                    className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-bold text-base flex items-center justify-center transition cursor-pointer"
-                  >+</button>
-                </div>
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition text-xl leading-none ml-1 cursor-pointer"
-                  aria-label="Usuń"
-                >×</button>
-              </div>
+              <Card key={item.id} className="px-4 py-3">
+                <Stack direction="row" align="center" gap={3}>
+                  <Stack gap={0} className="flex-1 min-w-0">
+                    <Text size="sm" weight="medium" truncate>{item.name}</Text>
+                    <Text size="xs" tone="subtle">{formatPrice(item.price * quantity)}</Text>
+                  </Stack>
+                  <Stack direction="row" align="center" gap={1}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setQuantity(item.id, -1)}
+                      className="w-7 h-7 p-0 rounded-[9px]"
+                    >−</Button>
+                    <Text as="span" size="sm" weight="bold" align="center" className="w-6">
+                      {quantity}
+                    </Text>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setQuantity(item.id, 1)}
+                      className="w-7 h-7 p-0 rounded-[9px]"
+                    >+</Button>
+                  </Stack>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFromCart(item.id)}
+                    aria-label="Usuń"
+                    className="p-0 ml-1 text-[var(--ios-ink-3)] hover:text-[var(--ios-red)] text-xl leading-none font-normal"
+                  >×</Button>
+                </Stack>
+              </Card>
             ))}
-          </div>
+          </Stack>
 
-          <div className="flex items-center justify-between px-1">
-            <span className="text-sm text-gray-500 dark:text-gray-400">Łącznie</span>
-            <span className="text-base font-bold text-gray-900 dark:text-white">{formatPrice(totalPrice)}</span>
-          </div>
+          <Stack direction="row" align="center" justify="between" className="px-1">
+            <Text as="span" size="sm" tone="muted">Łącznie</Text>
+            <Text as="span" size="base" weight="bold">{formatPrice(totalPrice)}</Text>
+          </Stack>
 
           <Input
             type="email"
@@ -184,15 +214,15 @@ export function OrderBuilder({ restaurantId, onSubmit }: Props) {
             onClick={handleSubmit}
             loading={submitting}
             fullWidth
-            className="py-3.5 rounded-xl text-base font-bold"
+            size="lg"
           >
             {submitting
               ? 'Wysyłanie…'
               : `Zamów (${cart.length} ${cart.length === 1 ? 'pozycja' : cart.length < 5 ? 'pozycje' : 'pozycji'} · ${formatPrice(totalPrice)})`
             }
           </Button>
-        </div>
+        </Stack>
       )}
-    </div>
+    </Stack>
   )
 }

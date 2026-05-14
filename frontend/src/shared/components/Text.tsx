@@ -14,15 +14,17 @@ interface TextProps extends HTMLAttributes<HTMLElement> {
   align?: Align
   truncate?: boolean
   italic?: boolean
+  /** Use SF Mono for tabular figures / IDs / prices. */
+  mono?: boolean
   children: ReactNode
 }
 
 const sizes: Record<Size, string> = {
-  xs: 'text-xs',
-  sm: 'text-sm',
-  base: 'text-base',
-  lg: 'text-lg',
-  xl: 'text-xl',
+  xs:   'text-[11px] leading-[1.4] tracking-[0.01em]',
+  sm:   'text-[13px] leading-[1.4] tracking-[-0.005em]',
+  base: 'text-[15px] leading-[1.45] tracking-[-0.01em]',
+  lg:   'text-[17px] leading-[1.4] tracking-[-0.015em]',
+  xl:   'text-[20px] leading-[1.35] tracking-[-0.02em]',
 }
 
 const weights: Record<Weight, string> = {
@@ -33,14 +35,14 @@ const weights: Record<Weight, string> = {
 }
 
 const tones: Record<Tone, string> = {
-  default: 'text-gray-900 dark:text-gray-100',
-  muted: 'text-gray-600 dark:text-gray-400',
-  subtle: 'text-gray-500 dark:text-gray-500',
-  primary: 'text-blue-600 dark:text-blue-400',
-  success: 'text-green-600 dark:text-green-400',
-  warning: 'text-yellow-600 dark:text-yellow-400',
-  danger: 'text-red-600 dark:text-red-400',
-  inverse: 'text-white dark:text-gray-900',
+  default: 'text-[var(--ios-ink)]',
+  muted:   'text-[var(--ios-ink-2)]',
+  subtle:  'text-[var(--ios-ink-3)]',
+  primary: 'text-[var(--ios-blue)]',
+  success: 'text-[var(--ios-green-ink)]',
+  warning: 'text-[var(--ios-orange-ink)]',
+  danger:  'text-[var(--ios-red-ink)]',
+  inverse: 'text-white dark:text-black',
 }
 
 const alignments: Record<Align, string> = {
@@ -57,6 +59,7 @@ export function Text({
   align,
   truncate = false,
   italic = false,
+  mono = false,
   className,
   children,
   ...props
@@ -70,6 +73,7 @@ export function Text({
         align && alignments[align],
         truncate && 'truncate',
         italic && 'italic',
+        mono && 'font-mono',
         className
       )}
       {...props}

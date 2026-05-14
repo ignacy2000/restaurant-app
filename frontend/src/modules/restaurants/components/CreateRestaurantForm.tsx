@@ -1,10 +1,15 @@
 import { useState, FormEvent } from 'react'
 import type { CreateRestaurantReq } from '../types/restaurant.types'
-import { Alert } from '../../../shared/components/Alert'
-import { Button } from '../../../shared/components/Button'
-import { Card } from '../../../shared/components/Card'
-import { FormField } from '../../../shared/components/FormField'
-import { Input } from '../../../shared/components/Input'
+import {
+  Alert,
+  Button,
+  Card,
+  FormField,
+  Grid,
+  Input,
+  Stack,
+  Title,
+} from '../../../shared/components'
 
 interface Props {
   onSubmit: (data: CreateRestaurantReq) => Promise<void>
@@ -32,50 +37,54 @@ export function CreateRestaurantForm({ onSubmit, onCancel }: Props) {
 
   return (
     <Card className="p-6 mb-6">
-      <h3 className="text-base font-bold mb-4 dark:text-white">Nowa restauracja</h3>
+      <Stack gap={4}>
+        <Title level={3} size="sm">Nowa restauracja</Title>
 
-      {error && <Alert className="mb-4">{error}</Alert>}
+        {error && <Alert>{error}</Alert>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <FormField label="Nazwa *" htmlFor="r-name">
-          <Input
-            id="r-name"
-            type="text"
-            required
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="np. Pizzeria Roma"
-          />
-        </FormField>
+        <form onSubmit={handleSubmit}>
+          <Stack gap={4}>
+            <FormField label="Nazwa *" htmlFor="r-name">
+              <Input
+                id="r-name"
+                type="text"
+                required
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="np. Pizzeria Roma"
+              />
+            </FormField>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Adres" htmlFor="r-address">
-            <Input
-              id="r-address"
-              type="text"
-              value={address}
-              onChange={e => setAddress(e.target.value)}
-              placeholder="ul. Przykładowa 1"
-            />
-          </FormField>
-          <FormField label="Opis" htmlFor="r-desc">
-            <Input
-              id="r-desc"
-              type="text"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="Krótki opis"
-            />
-          </FormField>
-        </div>
+            <Grid cols={2} gap={4}>
+              <FormField label="Adres" htmlFor="r-address">
+                <Input
+                  id="r-address"
+                  type="text"
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  placeholder="ul. Przykładowa 1"
+                />
+              </FormField>
+              <FormField label="Opis" htmlFor="r-desc">
+                <Input
+                  id="r-desc"
+                  type="text"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Krótki opis"
+                />
+              </FormField>
+            </Grid>
 
-        <div className="flex justify-end gap-3 pt-1">
-          <Button type="button" variant="secondary" onClick={onCancel}>Anuluj</Button>
-          <Button type="submit" loading={loading}>
-            {loading ? 'Tworzenie…' : 'Utwórz restaurację'}
-          </Button>
-        </div>
-      </form>
+            <Stack direction="row" justify="end" gap={3} className="pt-1">
+              <Button type="button" variant="secondary" onClick={onCancel}>Anuluj</Button>
+              <Button type="submit" loading={loading}>
+                {loading ? 'Tworzenie…' : 'Utwórz restaurację'}
+              </Button>
+            </Stack>
+          </Stack>
+        </form>
+      </Stack>
     </Card>
   )
 }

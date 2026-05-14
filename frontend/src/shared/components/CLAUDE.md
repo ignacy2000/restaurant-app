@@ -2,6 +2,8 @@
 
 Wszystko jest komponentem. Nie używaj surowych `<div>`, `<p>`, `<span>`, `<h1>`, `<a>`, `<img>`, `<ul>`, `<button>` w kodzie feature'owym — używaj prymitywów z tego folderu.
 
+Styl: **iOS / macOS** — kolory, cienie i radiusy przez zmienne `var(--ios-*)` z [src/index.css](../../index.css). Komponenty nie używają surowych palet Tailwind (`bg-blue-600`, `text-gray-500`); operują na tokenach (`--ios-blue`, `--ios-ink-2`, `--ios-surface`, `--ios-shadow-1`). Dark mode jest automatyczny — tokeny mają swoje wartości w `:root` i `.dark`.
+
 ## Mapa prymitywów
 
 ### Typografia
@@ -32,9 +34,27 @@ Wszystko jest komponentem. Nie używaj surowych `<div>`, `<p>`, `<span>`, `<h1>`
 | inline SVG | `Icon` | `size`, `tone`, `label` (a11y); dzieci = `<path>` |
 | `<ul>`/`<ol>` + `<li>` | `List` + `ListItem` | `variant` (`unordered`/`ordered`/`none`), `spacing` |
 
-### Wcześniej istniejące
+### Formularze / interakcja
 
-`Alert`, `Badge`, `Button`, `Card`, `EmptyState`, `FormField`, `Input`, `Textarea`, `Spinner`, `ThemeToggle`, `ProtectedRoute`.
+| HTML | Komponent | Props |
+|------|-----------|-------|
+| `<button>` | `Button` | `variant` (`primary`/`secondary`/`danger`/`ghost`), `size`, `loading`, `fullWidth` |
+| `<input>` | `Input` | jak natywny, ujednolicony styl iOS |
+| `<textarea>` | `Textarea` | jak natywny |
+| label + input + error | `FormField` | `label`, `htmlFor`, `error` |
+
+### Komunikaty / status
+
+| Komponent | Props | Kiedy używać |
+|-----------|-------|--------------|
+| `Alert` | `variant` (`error`/`info`/`success`/`warning`) | komunikat z `role=alert`/`status` |
+| `Badge` | `color` (`yellow`/`blue`/`indigo`/`green`/`gray`/`red`/`orange`), `dot` | status pill, licznik, status "na żywo" (z `dot`) |
+| `EmptyState` | `icon`, `title`, `description?`, `action?` | brak danych / pusty stan |
+| `Spinner` | `size`, `inline` | loading |
+
+### Inne
+
+`Card` (powierzchnia z radius/shadow), `ThemeToggle` (przełącznik motywu), `ProtectedRoute` (wrap z auth-check).
 
 ## Konwencje pisania komponentów
 

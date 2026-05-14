@@ -3,10 +3,15 @@ import { useParams } from 'react-router-dom'
 import { useTables } from '../hooks/useTables'
 import { TableCard } from '../components/TableCard'
 import { AddTableForm } from '../components/AddTableForm'
-import { Alert } from '../../../../../shared/components/Alert'
-import { Button } from '../../../../../shared/components/Button'
-import { EmptyState } from '../../../../../shared/components/EmptyState'
-import { Spinner } from '../../../../../shared/components/Spinner'
+import {
+  Alert,
+  Button,
+  EmptyState,
+  Grid,
+  Spinner,
+  Stack,
+  Title,
+} from '../../../../../shared/components'
 import type { CreateTableReq } from '../types/table.types'
 
 export function TablesPage() {
@@ -21,12 +26,12 @@ export function TablesPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-xl font-bold dark:text-white">Stoliki</h1>
+      <Stack direction="row" align="center" justify="between" className="mb-8">
+        <Title level={1} size="lg">Stoliki</Title>
         {!showForm && (
           <Button onClick={() => setShowForm(true)}>+ Dodaj stolik</Button>
         )}
-      </div>
+      </Stack>
 
       {showForm && (
         <AddTableForm onSubmit={handleCreate} onCancel={() => setShowForm(false)} />
@@ -44,7 +49,7 @@ export function TablesPage() {
           action={<Button size="lg" onClick={() => setShowForm(true)}>+ Dodaj pierwszy stolik</Button>}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <Grid cols={1} responsive={{ sm: 2, lg: 3, xl: 4 }} gap={4}>
           {tables.map(table => (
             <TableCard
               key={table.id}
@@ -54,7 +59,7 @@ export function TablesPage() {
               onDelete={remove}
             />
           ))}
-        </div>
+        </Grid>
       )}
     </>
   )

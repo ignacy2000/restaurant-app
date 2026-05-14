@@ -38,6 +38,7 @@ Top-level w `src/app/router.tsx` zbiera `authRoutes`, `guestRoutes` i `<Restaura
 - **Tailwind v4** przez `@tailwindcss/vite`. Brak `tailwind.config.*` — konfiguracja w CSS (`@import`/`@theme`).
 - Klasy łączone przez [src/shared/utils/cn.ts](src/shared/utils/cn.ts) (`clsx` + `tailwind-merge`).
 - Dark mode jest globalny (klasa `dark` na `<html>`) — komponenty ZAWSZE deklarują warianty `dark:`.
+- **Design tokens w stylu iOS / macOS** — zmienne CSS w [src/index.css](src/index.css): `--ios-bg`, `--ios-surface`, `--ios-ink`, `--ios-blue`, `--ios-red-soft`, `--ios-shadow-1` itp. Komponenty `shared/` używają tych zmiennych zamiast surowych kolorów Tailwinda (`bg-white`, `text-gray-500`, …). W kodzie feature'owym używaj komponentów design systemu — nie sięgaj po `bg-blue-600` ręcznie.
 
 ## HTTP
 
@@ -74,6 +75,8 @@ Konwencje:
 
 ## Czego NIE robić w nowym kodzie feature'owym
 
-- Nie używaj surowych elementów typograficznych/layoutowych — używaj design systemu z `shared/components/` (patrz `shared/components/CLAUDE.md`).
-- Nie importuj `react-router-dom` `Link` bezpośrednio w stronach — używaj `Link` z `shared/components`.
+- Nie używaj surowych `<div>`/`<p>`/`<span>`/`<h1-6>`/`<a>`/`<img>`/`<ul>`/`<button>` — używaj design systemu z `shared/components/` (`Box`, `Stack`, `Flex`, `Grid`, `Container`, `Text`, `Title`, `Label`, `Link`, `Image`, `Icon`, `List`/`ListItem`, `Button`, …). Pełna mapa w `shared/components/CLAUDE.md`.
+- Nie importuj `react-router-dom` `Link` bezpośrednio w stronach — używaj `Link` z `shared/components` (obsługuje `to` dla internal i `href` dla external).
+- Nie sięgaj po surowe kolory Tailwinda (`bg-blue-600`, `text-gray-500`, …) — używaj wariantów komponentów (`tone="muted"`, `variant="primary"`) albo zmiennych `var(--ios-*)`.
 - Nie wprowadzaj globalnych styli — wszystko przez Tailwind + warianty komponentów.
+- Komunikaty błędów i UI po polsku; teksty błędów z backendu (po angielsku) tłumaczymy w hookach/formularzach.

@@ -2,8 +2,16 @@ import { useState, useRef } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import type { Table } from '../types/table.types'
 import { validateUpdateTable, TABLE_LIMITS } from '../services/validation'
-import { Button } from '../../../../../shared/components/Button'
-import { Card } from '../../../../../shared/components/Card'
+import {
+  Box,
+  Button,
+  Card,
+  FormField,
+  Input,
+  Stack,
+  Text,
+  Title,
+} from '../../../../../shared/components'
 
 function seats(n: number): string {
   const r10 = n % 10
@@ -88,62 +96,70 @@ export function TableCard({ table, restaurantId, onUpdateCapacity, onDelete }: P
   }
 
   return (
-    <Card className="flex flex-col transition hover:shadow-md overflow-hidden">
-      <div className="p-5 flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">Stolik</p>
-            <p className="text-3xl font-extrabold text-gray-900 dark:text-white">#{table.number}</p>
-          </div>
+    <Card className="flex flex-col transition hover:shadow-[var(--ios-shadow-2)] overflow-hidden">
+      <Stack gap={3} className="p-5">
+        <Stack direction="row" align="start" justify="between" gap={2}>
+          <Stack gap={0}>
+            <Text size="xs" weight="medium" tone="subtle" className="uppercase tracking-wide">
+              Stolik
+            </Text>
+            <Title level={2} size="2xl">#{table.number}</Title>
+          </Stack>
 
           {!editing && (
-            <div className="flex gap-1.5 mt-1">
+            <Stack direction="row" gap={1} className="mt-1">
               <Button size="sm" variant="secondary" onClick={() => setShowQr(v => !v)}>QR</Button>
               <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>Edytuj</Button>
               <Button size="sm" variant="danger" loading={deleting} onClick={handleDelete}>
                 {deleting ? '…' : 'Usuń'}
               </Button>
-            </div>
+            </Stack>
           )}
-        </div>
+        </Stack>
 
         {editing ? (
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-gray-600 dark:text-gray-400">Pojemność</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={TABLE_LIMITS.capacityMin}
-                max={TABLE_LIMITS.capacityMax}
-                value={capacity}
-                onChange={e => setCapacity(Number(e.target.value))}
-                className="w-24 px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-blue-900/30"
-              />
-              <Button size="sm" loading={saving} onClick={handleSave}>
-                {saving ? '…' : 'Zapisz'}
-              </Button>
-              <Button size="sm" variant="secondary" onClick={handleCancel}>Anuluj</Button>
-            </div>
-            {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
-          </div>
+          <Stack gap={2}>
+            <FormField label="Pojemność" htmlFor={`t-cap-${table.id}`}>
+              <Stack direction="row" align="center" gap={2}>
+                <Input
+                  id={`t-cap-${table.id}`}
+                  type="number"
+                  min={TABLE_LIMITS.capacityMin}
+                  max={TABLE_LIMITS.capacityMax}
+                  value={capacity}
+                  onChange={e => setCapacity(Number(e.target.value))}
+                  className="w-24"
+                />
+                <Button size="sm" loading={saving} onClick={handleSave}>
+                  {saving ? '…' : 'Zapisz'}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={handleCancel}>Anuluj</Button>
+              </Stack>
+            </FormField>
+            {error && <Text size="xs" tone="danger">{error}</Text>}
+          </Stack>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-gray-400">{seats(table.capacity)}</p>
+          <Text size="sm" tone="muted">{seats(table.capacity)}</Text>
         )}
-      </div>
+      </Stack>
 
       {showQr && (
-        <div className="border-t border-gray-100 dark:border-gray-700 px-5 py-4 flex flex-col items-center gap-3">
-          <QRCodeSVG ref={qrRef} value={guestUrl} size={160} level="M" className="rounded-lg" />
-          <p className="text-xs text-gray-400 dark:text-gray-500 break-all text-center leading-relaxed">{guestUrl}</p>
-          <div className="flex gap-2 w-full">
-            <Button size="sm" variant="secondary" fullWidth onClick={handleCopy}>
-              {copied ? '✓ Skopiowano' : 'Kopiuj link'}
-            </Button>
-            <Button size="sm" variant="secondary" fullWidth onClick={handleDownload}>
-              Pobierz SVG
-            </Button>
-          </div>
-        </div>
+        <Box className="border-t border-[var(--ios-border)] px-5 py-4">
+          <Stack align="center" gap={3}>
+            <QRCodeSVG ref={qrRef} value={guestUrl} size={160} level="M" className="rounded-lg" />
+            <Text size="xs" tone="subtle" align="center" className="break-all leading-relaxed">
+              {guestUrl}
+            </Text>
+            <Stack direction="row" gap={2} className="w-full">
+              <Button size="sm" variant="secondary" fullWidth onClick={handleCopy}>
+                {copied ? '✓ Skopiowano' : 'Kopiuj link'}
+              </Button>
+              <Button size="sm" variant="secondary" fullWidth onClick={handleDownload}>
+                Pobierz SVG
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
       )}
     </Card>
   )

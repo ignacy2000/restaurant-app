@@ -1,12 +1,16 @@
 import { useState, FormEvent } from 'react'
 import type { CreateMenuReq } from '../types/menu.types'
 import { LIMITS, validateMenuFields } from '../services/validation'
-import { Alert } from '../../../../../shared/components/Alert'
-import { Button } from '../../../../../shared/components/Button'
-import { Card } from '../../../../../shared/components/Card'
-import { FormField } from '../../../../../shared/components/FormField'
-import { Input } from '../../../../../shared/components/Input'
-import { Textarea } from '../../../../../shared/components/Textarea'
+import {
+  Alert,
+  Button,
+  Card,
+  FormField,
+  Input,
+  Stack,
+  Textarea,
+  Title,
+} from '../../../../../shared/components'
 
 interface Props {
   onSubmit: (data: CreateMenuReq) => Promise<void>
@@ -40,41 +44,45 @@ export function AddMenuForm({ onSubmit, onCancel }: Props) {
 
   return (
     <Card className="p-6 mb-6">
-      <h3 className="text-base font-bold mb-4 dark:text-white">Nowe menu</h3>
+      <Stack gap={4}>
+        <Title level={3} size="sm">Nowe menu</Title>
 
-      {error && <Alert className="mb-4">{error}</Alert>}
+        {error && <Alert>{error}</Alert>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <FormField label="Nazwa *" htmlFor="m-name">
-          <Input
-            id="m-name"
-            type="text"
-            required
-            maxLength={LIMITS.nameMax}
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="np. Karta dań, Lunch, Sezonowe"
-          />
-        </FormField>
+        <form onSubmit={handleSubmit}>
+          <Stack gap={4}>
+            <FormField label="Nazwa *" htmlFor="m-name">
+              <Input
+                id="m-name"
+                type="text"
+                required
+                maxLength={LIMITS.nameMax}
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="np. Karta dań, Lunch, Sezonowe"
+              />
+            </FormField>
 
-        <FormField label="Opis" htmlFor="m-desc">
-          <Textarea
-            id="m-desc"
-            rows={3}
-            maxLength={LIMITS.descriptionMax}
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            placeholder="Krótki opis menu (opcjonalnie)"
-          />
-        </FormField>
+            <FormField label="Opis" htmlFor="m-desc">
+              <Textarea
+                id="m-desc"
+                rows={3}
+                maxLength={LIMITS.descriptionMax}
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="Krótki opis menu (opcjonalnie)"
+              />
+            </FormField>
 
-        <div className="flex justify-end gap-3 pt-1">
-          <Button type="button" variant="secondary" onClick={onCancel}>Anuluj</Button>
-          <Button type="submit" loading={loading}>
-            {loading ? 'Dodawanie…' : 'Dodaj menu'}
-          </Button>
-        </div>
-      </form>
+            <Stack direction="row" justify="end" gap={3} className="pt-1">
+              <Button type="button" variant="secondary" onClick={onCancel}>Anuluj</Button>
+              <Button type="submit" loading={loading}>
+                {loading ? 'Dodawanie…' : 'Dodaj menu'}
+              </Button>
+            </Stack>
+          </Stack>
+        </form>
+      </Stack>
     </Card>
   )
 }

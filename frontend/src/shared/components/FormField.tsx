@@ -9,15 +9,17 @@ interface FormFieldProps {
 
 export function FormField({ label, htmlFor, error, children }: FormFieldProps) {
   return (
-    <div>
+    <div className="flex flex-col gap-1.5">
       <label
         htmlFor={htmlFor}
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"
+        className="text-[12px] font-semibold tracking-[-0.01em] text-[var(--ios-ink-2)]"
       >
         {label}
       </label>
       {children}
-      {error && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {error && (
+        <p className="mt-0.5 text-[12px] font-medium text-[var(--ios-red)] tracking-[-0.01em]">{error}</p>
+      )}
     </div>
   )
 }

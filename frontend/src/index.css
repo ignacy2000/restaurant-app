@@ -1,8 +1,118 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* iOS / macOS design tokens. */
+:root {
+  --ios-bg: #F2F2F7;
+  --ios-surface: #FFFFFF;
+  --ios-surface-2: #F2F2F7;
+  --ios-surface-3: #E5E5EA;
+  --ios-surface-sunken: #F9F9FB;
+  --ios-border: rgba(60, 60, 67, 0.29);
+  --ios-border-soft: rgba(60, 60, 67, 0.18);
+  --ios-ink: rgba(0, 0, 0, 0.92);
+  --ios-ink-2: rgba(60, 60, 67, 0.72);
+  --ios-ink-3: rgba(60, 60, 67, 0.48);
+
+  --ios-blue: #007AFF;
+  --ios-blue-hover: #0066D6;
+  --ios-blue-soft: rgba(0, 122, 255, 0.12);
+  --ios-blue-ink: #0040A8;
+  --ios-green: #34C759;
+  --ios-green-soft: rgba(52, 199, 89, 0.14);
+  --ios-green-ink: #1B7A39;
+  --ios-red: #FF3B30;
+  --ios-red-soft: rgba(255, 59, 48, 0.13);
+  --ios-red-ink: #A8281F;
+  --ios-orange: #FF9500;
+  --ios-orange-soft: rgba(255, 149, 0, 0.14);
+  --ios-orange-ink: #B05B00;
+  --ios-yellow: #FFCC00;
+  --ios-yellow-soft: rgba(255, 204, 0, 0.18);
+  --ios-yellow-ink: #806600;
+  --ios-indigo: #5856D6;
+  --ios-indigo-soft: rgba(88, 86, 214, 0.14);
+  --ios-indigo-ink: #2F2EA0;
+
+  --ios-shadow-1: 0 0.5px 0 rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --ios-shadow-2: 0 0.5px 0 rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --ios-shadow-3: 0 20px 50px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --ios-ring-focus: 0 0 0 3px rgba(0, 122, 255, 0.25);
+}
+
+.dark {
+  --ios-bg: #000000;
+  --ios-surface: #1C1C1E;
+  --ios-surface-2: #2C2C2E;
+  --ios-surface-3: #3A3A3C;
+  --ios-surface-sunken: #0E0E10;
+  --ios-border: rgba(84, 84, 88, 0.65);
+  --ios-border-soft: rgba(84, 84, 88, 0.40);
+  --ios-ink: rgba(255, 255, 255, 0.96);
+  --ios-ink-2: rgba(235, 235, 245, 0.62);
+  --ios-ink-3: rgba(235, 235, 245, 0.34);
+
+  --ios-blue: #0A84FF;
+  --ios-blue-hover: #2391FF;
+  --ios-blue-soft: rgba(10, 132, 255, 0.20);
+  --ios-blue-ink: #66B0FF;
+  --ios-green: #30D158;
+  --ios-green-soft: rgba(48, 209, 88, 0.20);
+  --ios-green-ink: #6FE08B;
+  --ios-red: #FF453A;
+  --ios-red-soft: rgba(255, 69, 58, 0.22);
+  --ios-red-ink: #FF8478;
+  --ios-orange: #FF9F0A;
+  --ios-orange-soft: rgba(255, 159, 10, 0.20);
+  --ios-orange-ink: #FFC169;
+  --ios-yellow: #FFD60A;
+  --ios-yellow-soft: rgba(255, 214, 10, 0.18);
+  --ios-yellow-ink: #FFE066;
+  --ios-indigo: #5E5CE6;
+  --ios-indigo-soft: rgba(94, 92, 230, 0.22);
+  --ios-indigo-ink: #A6A4FF;
+
+  --ios-shadow-1: 0 0.5px 0 rgba(255, 255, 255, 0.04), 0 1px 2px rgba(0, 0, 0, 0.45);
+  --ios-shadow-2: 0 0.5px 0 rgba(255, 255, 255, 0.04), 0 6px 20px rgba(0, 0, 0, 0.55);
+  --ios-shadow-3: 0 24px 60px rgba(0, 0, 0, 0.7), 0 4px 14px rgba(0, 0, 0, 0.5);
+  --ios-ring-focus: 0 0 0 3px rgba(10, 132, 255, 0.35);
+}
+
 @layer base {
+  html, body {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro",
+      "Helvetica Neue", system-ui, sans-serif;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+    background: var(--ios-bg);
+    color: var(--ios-ink);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro",
+      "Helvetica Neue", system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer utilities {
+  /* iOS pulsing dot — used for "Na żywo" indicator. */
+  @keyframes ios-pulse {
+    0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ios-green) 60%, transparent); }
+    70%  { box-shadow: 0 0 0 8px color-mix(in srgb, var(--ios-green) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ios-green) 0%, transparent); }
+  }
+  .ios-pulse { animation: ios-pulse 1.6s ease-out infinite; }
+
+  /* iOS spinner — segmented activity indicator (8 ticks). */
+  @keyframes ios-spinner-fade {
+    0%, 39%, 100% { opacity: 0.22; }
+    40%           { opacity: 1;    }
   }
 }

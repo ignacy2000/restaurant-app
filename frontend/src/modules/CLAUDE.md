@@ -47,10 +47,11 @@ Nie re-eksportuj komponentów internalnych modułu.
 
 - **Nazwy** — pliki w kebab-case (`menus.api.ts`, `menu.types.ts`); komponenty/hooki w PascalCase/`useFoo`.
 - **Importy między modułami** — wyłącznie przez barrel (`from '../../<module>'`), nie głęboko w pliki.
-- **Importy z shared** — przez ścieżki względne (`../../../shared/...`) lub przyszły alias `@/shared/...` (póki co względne).
+- **Importy z shared** — przez ścieżki względne (`../../../shared/...`) lub przyszły alias `@/shared/...` (póki co względne). Komponenty design systemu importuj z barrel'a: `import { Stack, Text, Title } from '../../../shared/components'`.
 - **Typy z backendu** — duplikat w `types/`. Trzymaj nazwy zgodne z DTO (`CreateMenuReq` ↔ Go `CreateMenuReq`).
-- **Walidacja** — `zod` schemas trzymaj w module (np. `types/<name>.schema.ts`) gdy form jest złożony.
+- **Walidacja** — `zod` w `services/validation.ts` (już mamy w `auth/`, `restaurants/`, `tables/`, `menus/`, `orders/`). Komunikaty po polsku, limity exportuj jako `*_LIMITS` żeby form mógł je użyć w `maxLength`.
 - **Hooki** — `useXxx` zwracają `{ data, loading, error, refetch }` lub akcje (`createX, updateX, deleteX`). Łapane są `HttpError` z `shared/services/http`.
+- **UI** — komponenty modułu używają wyłącznie prymitywów z `shared/components/` (Stack, Card, Text, Title, Button, FormField, …). Patrz `shared/components/CLAUDE.md`.
 
 ## Dodawanie nowego modułu
 

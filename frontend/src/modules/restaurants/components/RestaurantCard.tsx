@@ -1,6 +1,5 @@
-import { Link } from 'react-router-dom'
 import type { Restaurant } from '../types/restaurant.types'
-import { Card } from '../../../shared/components/Card'
+import { Card, Link, Stack, Text, Title } from '../../../shared/components'
 
 interface Props {
   restaurant: Restaurant
@@ -8,20 +7,23 @@ interface Props {
 
 export function RestaurantCard({ restaurant }: Props) {
   return (
-    <Card className="p-6 flex flex-col gap-3 transition hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600">
-      <h3 className="text-base font-bold text-gray-900 dark:text-white">{restaurant.name}</h3>
-      <div className="flex flex-col gap-1 text-sm text-gray-500 dark:text-gray-400 flex-1">
-        {restaurant.address && <span>📍 {restaurant.address}</span>}
-        {restaurant.description && (
-          <span className="line-clamp-2">{restaurant.description}</span>
-        )}
-      </div>
-      <Link
-        to={`/restaurants/${restaurant.id}`}
-        className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700 transition mt-1"
-      >
-        Otwórz →
-      </Link>
+    <Card className="p-6 transition hover:shadow-[var(--ios-shadow-2)]">
+      <Stack gap={3}>
+        <Title level={3} size="sm">{restaurant.name}</Title>
+        <Stack gap={1} className="flex-1">
+          {restaurant.address && (
+            <Text as="span" size="sm" tone="muted">📍 {restaurant.address}</Text>
+          )}
+          {restaurant.description && (
+            <Text as="span" size="sm" tone="muted" className="line-clamp-2">
+              {restaurant.description}
+            </Text>
+          )}
+        </Stack>
+        <Link to={`/restaurants/${restaurant.id}`} size="sm" className="mt-1">
+          Otwórz →
+        </Link>
+      </Stack>
     </Card>
   )
 }

@@ -1,8 +1,16 @@
 import { useState } from 'react'
 import type { Order, OrderStatus } from '../../orders/types/order.types'
-import { Badge } from '../../../../../shared/components/Badge'
-import { Button } from '../../../../../shared/components/Button'
-import { Card } from '../../../../../shared/components/Card'
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  List,
+  ListItem,
+  Stack,
+  Text,
+} from '../../../../../shared/components'
+import { cn } from '../../../../../shared/utils/cn'
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   awaiting_confirmation: 'Czeka na potwierdzenie',
@@ -60,47 +68,53 @@ export function OrderCard({ order, tableNumber, onUpdateStatus }: Props) {
   })
 
   return (
-    <Card className={`p-4 flex flex-col gap-3 transition ${isDone ? 'opacity-60' : ''}`}>
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-bold text-gray-900 dark:text-white">
-            {tableNumber != null ? `Stolik #${tableNumber}` : 'Stolik'}
-          </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">{time}</p>
-        </div>
-        <Badge color={STATUS_COLOR[order.status]}>{STATUS_LABEL[order.status]}</Badge>
-      </div>
+    <Card className={cn('p-4 transition', isDone && 'opacity-60')}>
+      <Stack gap={3}>
+        <Stack direction="row" align="start" justify="between" gap={2}>
+          <Stack gap={0}>
+            <Text weight="bold">
+              {tableNumber != null ? `Stolik #${tableNumber}` : 'Stolik'}
+            </Text>
+            <Text size="xs" tone="subtle">{time}</Text>
+          </Stack>
+          <Badge color={STATUS_COLOR[order.status]}>{STATUS_LABEL[order.status]}</Badge>
+        </Stack>
 
-      <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
-        {order.items.map(item => (
-          <li key={item.id} className="flex items-baseline gap-1.5">
-            <span className="font-medium text-gray-900 dark:text-white">×{item.quantity}</span>
-            <span>{item.name}</span>
-            {item.notes && <span className="text-gray-400 dark:text-gray-500 text-xs">({item.notes})</span>}
-          </li>
-        ))}
-      </ul>
+        <List variant="none" spacing="sm">
+          {order.items.map(item => (
+            <ListItem key={item.id}>
+              <Stack direction="row" gap={1} className="items-baseline gap-x-1.5">
+                <Text as="span" weight="medium">×{item.quantity}</Text>
+                <Text as="span" size="sm">{item.name}</Text>
+                {item.notes && (
+                  <Text as="span" size="xs" tone="subtle">({item.notes})</Text>
+                )}
+              </Stack>
+            </ListItem>
+          ))}
+        </List>
 
-      {order.notes && (
-        <p className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
-          Uwagi: {order.notes}
-        </p>
-      )}
+        {order.notes && (
+          <Box className="bg-[var(--ios-surface-2)] rounded-lg px-3 py-2">
+            <Text size="xs" tone="muted">Uwagi: {order.notes}</Text>
+          </Box>
+        )}
 
-      {!isDone && (
-        <div className="flex gap-2 pt-1">
-          {nextStatus && (
-            <Button size="sm" fullWidth loading={loading} onClick={() => handleAction(nextStatus)}>
-              {loading ? '…' : NEXT_LABEL[order.status]}
-            </Button>
-          )}
-          {order.status !== 'ready' && (
-            <Button size="sm" variant="danger" loading={loading} onClick={() => handleAction('cancelled')}>
-              Anuluj
-            </Button>
-          )}
-        </div>
-      )}
+        {!isDone && (
+          <Stack direction="row" gap={2} className="pt-1">
+            {nextStatus && (
+              <Button size="sm" fullWidth loading={loading} onClick={() => handleAction(nextStatus)}>
+                {loading ? '…' : NEXT_LABEL[order.status]}
+              </Button>
+            )}
+            {order.status !== 'ready' && (
+              <Button size="sm" variant="danger" loading={loading} onClick={() => handleAction('cancelled')}>
+                Anuluj
+              </Button>
+            )}
+          </Stack>
+        )}
+      </Stack>
     </Card>
   )
 }

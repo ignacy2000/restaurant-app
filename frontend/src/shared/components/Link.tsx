@@ -19,24 +19,24 @@ type ExternalProps = CommonProps & Omit<AnchorHTMLAttributes<HTMLAnchorElement>,
 type LinkProps = InternalProps | ExternalProps
 
 const variants: Record<Variant, string> = {
-  default: 'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300',
-  subtle: 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100',
+  default: 'text-[var(--ios-blue)] hover:opacity-80',
+  subtle:  'text-[var(--ios-ink-2)] hover:text-[var(--ios-ink)]',
   inherit: 'text-inherit hover:opacity-80',
 }
 
 const sizes: Record<Size, string> = {
-  sm: 'text-xs',
-  md: 'text-sm',
-  lg: 'text-base',
+  sm: 'text-[12px]',
+  md: 'text-[14px]',
+  lg: 'text-[16px]',
 }
 
 export function Link(props: LinkProps) {
   const { variant = 'default', size = 'md', underline = false, children, className } = props
   const classes = cn(
-    'transition-colors cursor-pointer',
+    'transition-opacity cursor-pointer tracking-[-0.01em] font-medium',
     variants[variant],
     sizes[size],
-    underline ? 'underline' : 'hover:underline',
+    underline && 'underline',
     className
   )
 

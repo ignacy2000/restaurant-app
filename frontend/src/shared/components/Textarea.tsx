@@ -1,20 +1,18 @@
 import { type TextareaHTMLAttributes, forwardRef } from 'react'
 import { cn } from '../utils/cn'
 
+const textareaBase =
+  'w-full px-3 py-2 text-[14px] outline-none rounded-[10px] resize-none ' +
+  'bg-[var(--ios-surface)] text-[var(--ios-ink)] ' +
+  'border-[0.5px] border-[var(--ios-border)] ' +
+  'placeholder:text-[var(--ios-ink-3)] ' +
+  'tracking-[-0.01em] transition-[border-color,box-shadow] duration-100 ' +
+  'focus:border-[var(--ios-blue)] focus:[box-shadow:var(--ios-ring-focus)] ' +
+  'disabled:opacity-60 disabled:cursor-not-allowed'
+
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
   ({ className, ...props }, ref) => (
-    <textarea
-      ref={ref}
-      className={cn(
-        'w-full px-3.5 py-2.5 rounded-lg text-sm outline-none transition resize-none',
-        'border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400',
-        'focus:border-blue-500 focus:ring-2 focus:ring-blue-100',
-        'dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500',
-        'dark:focus:border-blue-500 dark:focus:ring-blue-900/30',
-        className
-      )}
-      {...props}
-    />
+    <textarea ref={ref} className={cn(textareaBase, className)} {...props} />
   )
 )
 

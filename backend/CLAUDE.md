@@ -15,10 +15,10 @@ internal/ws/                # głębsza obsługa hubu/eventów
 internal/testhelper/        # narzędzia testowe (np. setup DB)
 pkg/config/                 # ładowanie env (.env opcjonalny)
 pkg/logger/                 # slog
-pkg/middleware/             # auth (JWT), CORS, request log
-pkg/mailer/                 # SMTP klient
-pkg/storage/                # S3 (MinIO) klient
-pkg/worker/                 # Asynq server + processory
+pkg/middleware/             # auth (JWT), dynamic CORS (z cache Redis), recovery, request log
+pkg/mailer/                 # SMTP klient (reset hasła + potwierdzenie zamówienia)
+pkg/storage/                # S3 (MinIO) klient — upload/serve zdjęć menu
+pkg/worker/                 # Asynq server + procesor zadań email
 pkg/ws/                     # WS hub (broker pub/sub)
 ```
 
@@ -41,16 +41,20 @@ Moduł z pod-modułami (np. `restaurant/`) ma dodatkowo:
 
 ## Wiring (composition root)
 
-Wszystko składamy w `cmd/api/main.go`. Schemat: utwórz pgx pool → uruchom migrations → utwórz Asynq client/worker → utwórz hub WS → dla każdego modułu: `NewRepository → NewService → NewHandler → Mount`. Nie używaj DI containerów — wszystko ręcznie.
+Wszystko składamy w `cmd/api/main.go`. Schemat: utwórz pgx pool → uruchom migrations → utwórz S3 client + ensure bucket → utwórz Asynq client/worker → utwórz hub WS → dla każdego modułu: `NewRepository → NewService → NewHandler → Mount`. Nie używaj DI containerów — wszystko ręcznie.
+
+`restaurant/` pakuje swoje pod-moduły w `mount.go::MountAll(...)` — `main.go` nie zna `menu/table/order/call/`.
 
 ## Konwencje
 
-- **Błędy** — handler zwraca `{"error": "..."}`. Wiadomości błędów krótkie i po angielsku (`invalid credentials`, `not found`), lub propaguj `err.Error()` dla błędów walidacji Gin.
+- **Błędy** — handler zwraca `{"error": "..."}`. Wiadomości błędów krótkie i po angielsku (`invalid credentials`, `not found`), lub propaguj `err.Error()` dla błędów walidacji Gin. Frontend tłumaczy je na polskie komunikaty.
 - **Walidacja** — `binding:"required,email,max=320"` itp. w DTO; Gin sam zwróci 400 z opisem.
-- **Auth** — middleware z `pkg/middleware`, montowany jako parametr w `Mount`.
+- **Auth** — middleware z `pkg/middleware`, montowany jako parametr w `Mount`. Dynamic CORS — origins trzymane w DB, cache w Redis, refresh co 60 s.
 - **Context** — zawsze `c.Request.Context()` do warstwy serwisu; nigdy `context.Background()` w handlerze.
-- **WebSocket** — emisja eventów przez `hub.Broadcast(...)`; klient (właściciel restauracji) subskrybuje na `/api/ws`.
+- **WebSocket** — emisja eventów przez `hub.Broadcast(...)`; klient (właściciel restauracji) subskrybuje na `/api/ws/restaurants/:id` (JWT w `?token=`), gość stolika na `/api/ws/restaurants/:id/tables/:tableId` (bez auth — read-only).
 - **Migracje** — pliki `NNNN_name.up.sql` + `NNNN_name.down.sql` w `internal/database/migrations/`; embed przez `embed.FS` i `MigrateUp` na starcie.
+- **Async** — wysyłka maili (reset hasła, potwierdzenie zamówienia) idzie do Asynq i jest obsługiwana przez `pkg/worker/EmailProcessor`. Nigdy nie wysyłaj e-maila synchronicznie w handlerze.
+- **Storage** — upload zdjęć menu lecą do `pkg/storage` (S3/MinIO). Service dostaje storage przez interface `ImageStore` — nie zaciągaj `pkg/storage` w testach.
 
 ## Komendy
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { callsApi } from '../../restaurants/modules/calls/services/calls.api'
-import { Button } from '../../../shared/components/Button'
+import { Alert, Button, Stack, Text } from '../../../shared/components'
 
 type State = 'idle' | 'loading' | 'done' | 'error'
 
@@ -27,30 +27,33 @@ export function CallWaiterButton({ restaurantId, tableId }: Props) {
 
   if (state === 'done') {
     return (
-      <div className="flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-5 py-4">
-        <span className="text-xl">✓</span>
-        <div>
-          <p className="font-semibold text-green-800 dark:text-green-400">Kelner został wezwany</p>
-          <p className="text-sm text-green-600 dark:text-green-500">Obsługa jest w drodze</p>
-        </div>
-      </div>
+      <Alert variant="success">
+        <Stack direction="row" align="center" gap={3}>
+          <Text as="span" size="xl">✓</Text>
+          <Stack gap={0}>
+            <Text as="span" weight="semibold">Kelner został wezwany</Text>
+            <Text as="span" size="sm">Obsługa jest w drodze</Text>
+          </Stack>
+        </Stack>
+      </Alert>
     )
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <Stack gap={2}>
       <Button
         onClick={handleCall}
         loading={state === 'loading'}
         fullWidth
-        className="py-4 bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600 rounded-xl text-base font-bold shadow-sm"
+        size="lg"
+        className="bg-[var(--ios-orange)] hover:bg-[var(--ios-orange)] hover:opacity-90 py-3.5"
       >
-        <span className="text-xl">🔔</span>
+        <Text as="span" size="xl">🔔</Text>
         {state === 'loading' ? 'Wysyłanie…' : 'Wezwij kelnera'}
       </Button>
       {state === 'error' && (
-        <p className="text-sm text-red-600 dark:text-red-400 text-center">Błąd — spróbuj ponownie</p>
+        <Text size="sm" tone="danger" align="center">Błąd — spróbuj ponownie</Text>
       )}
-    </div>
+    </Stack>
   )
 }

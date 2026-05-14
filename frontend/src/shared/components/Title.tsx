@@ -24,21 +24,22 @@ const defaultSizeByLevel: Record<Level, Size> = {
   6: 'sm',
 }
 
+// SF Pro Display sizing — iOS Large Title scale with tight tracking.
 const sizes: Record<Size, string> = {
-  xs: 'text-sm font-semibold',
-  sm: 'text-base font-semibold',
-  md: 'text-lg font-semibold',
-  lg: 'text-xl font-semibold',
-  xl: 'text-2xl font-bold',
-  '2xl': 'text-3xl font-bold',
-  '3xl': 'text-4xl font-bold tracking-tight',
+  xs:    'text-[15px] font-semibold tracking-[-0.02em]',
+  sm:    'text-[17px] font-semibold tracking-[-0.022em]',
+  md:    'text-[19px] font-semibold tracking-[-0.025em]',
+  lg:    'text-[22px] font-bold     tracking-[-0.028em]',
+  xl:    'text-[26px] font-bold     tracking-[-0.03em]',
+  '2xl': 'text-[32px] font-bold     tracking-[-0.035em] leading-[1.08]',
+  '3xl': 'text-[40px] font-bold     tracking-[-0.04em]  leading-[1.05]',
 }
 
 const tones: Record<Tone, string> = {
-  default: 'text-gray-900 dark:text-gray-100',
-  muted: 'text-gray-600 dark:text-gray-400',
-  inverse: 'text-white dark:text-gray-900',
-  primary: 'text-blue-600 dark:text-blue-400',
+  default: 'text-[var(--ios-ink)]',
+  muted:   'text-[var(--ios-ink-2)]',
+  inverse: 'text-white dark:text-black',
+  primary: 'text-[var(--ios-blue)]',
 }
 
 const alignments: Record<Align, string> = {

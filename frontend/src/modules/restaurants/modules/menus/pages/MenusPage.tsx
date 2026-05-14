@@ -4,16 +4,61 @@ import { useMenus } from '../hooks/useMenus'
 import { menusApi } from '../services/menus.api'
 import { AddMenuForm } from '../components/AddMenuForm'
 import { LIMITS, validateItemFields } from '../services/validation'
-import { Alert } from '../../../../../shared/components/Alert'
-import { Button } from '../../../../../shared/components/Button'
-import { Card } from '../../../../../shared/components/Card'
-import { EmptyState } from '../../../../../shared/components/EmptyState'
-import { Input } from '../../../../../shared/components/Input'
-import { Spinner } from '../../../../../shared/components/Spinner'
+import { cn } from '../../../../../shared/utils/cn'
+import {
+  Alert,
+  Box,
+  Button,
+  Card,
+  EmptyState,
+  Grid,
+  Image,
+  Input,
+  Spinner,
+  Stack,
+  Text,
+  Title,
+} from '../../../../../shared/components'
 import type { CreateMenuReq, CreateMenuItemReq, MenuItem } from '../types/menu.types'
 
 function formatPrice(price: number) {
   return price.toFixed(2).replace('.', ',') + ' zł'
+}
+
+type ImageMode = 'none' | 'url' | 'upload'
+
+interface ImageModeTabsProps {
+  value: ImageMode
+  onChange: (mode: ImageMode) => void
+}
+
+function ImageModeTabs({ value, onChange }: ImageModeTabsProps) {
+  const tabs: Array<{ mode: ImageMode; label: string }> = [
+    { mode: 'none', label: 'Bez zdjęcia' },
+    { mode: 'url', label: '🔗 URL' },
+    { mode: 'upload', label: '📷 Plik' },
+  ]
+  return (
+    <Stack direction="row" gap={1} className="pt-1">
+      {tabs.map(({ mode, label }) => (
+        <Button
+          key={mode}
+          type="button"
+          variant={value === mode ? 'primary' : 'ghost'}
+          size="sm"
+          onClick={() => onChange(mode)}
+          className={cn(
+            'flex-1 px-2 py-1.5 text-xs font-normal rounded-md border',
+            value === mode
+              ? 'bg-[var(--ios-blue-soft)] border-[var(--ios-blue)] text-[var(--ios-blue-ink)] hover:bg-[var(--ios-blue-soft)]'
+              : 'border-[var(--ios-border)] text-[var(--ios-ink-2)]'
+          )}
+        >
+          {label}
+        </Button>
+      ))}
+    </Stack>
+  )
 }
 
 interface ItemTileProps {
@@ -122,115 +167,97 @@ function ItemTile({ item, onUpdated, onDeleted }: ItemTileProps) {
 
   return (
     <Card className="overflow-hidden flex flex-col">
-      <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-800">
+      <Box className="relative aspect-[4/3] bg-[var(--ios-surface-2)]">
         {item.image_url ? (
-          <img
+          <Image
             src={item.image_url}
             alt={item.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            fit="cover"
+            className="absolute inset-0 w-full h-full"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-300 dark:text-gray-600 text-5xl">
-            🍽️
-          </div>
+          <Stack
+            align="center"
+            justify="center"
+            className="absolute inset-0 text-[var(--ios-ink-3)]"
+          >
+            <Text as="span" size="xl">🍽️</Text>
+          </Stack>
         )}
         {!editing && (
           <>
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={startEdit}
               aria-label="Edytuj pozycję"
-              className="absolute top-2 right-10 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-blue-500 transition cursor-pointer text-xs leading-none"
-            >✎</button>
-            <button
+              className="absolute top-2 right-10 w-7 h-7 p-0 rounded-full bg-black/40 text-white hover:bg-[var(--ios-blue)] text-xs leading-none font-normal"
+            >✎</Button>
+            <Button
               type="button"
+              variant="ghost"
               onClick={handleDelete}
               disabled={deleting}
               aria-label="Usuń pozycję"
-              className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-red-500 transition disabled:opacity-40 cursor-pointer text-sm leading-none"
-            >×</button>
+              className="absolute top-2 right-2 w-7 h-7 p-0 rounded-full bg-black/40 text-white hover:bg-[var(--ios-red)] text-sm leading-none font-normal"
+            >×</Button>
           </>
         )}
-      </div>
+      </Box>
       {editing ? (
-        <form onSubmit={handleSave} className="p-4 flex flex-col gap-2 flex-1">
-          <Input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Nazwa *" maxLength={LIMITS.nameMax} required className="px-3 py-2" />
-          <Input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Opis (opcjonalnie)" maxLength={LIMITS.descriptionMax} className="px-3 py-2" />
-          <Input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Cena (zł)" min={0} max={LIMITS.priceMax} step="0.01" className="px-3 py-2" />
+        <form onSubmit={handleSave} className="flex-1">
+          <Stack gap={2} className="p-4 h-full">
+            <Input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Nazwa *" maxLength={LIMITS.nameMax} required />
+            <Input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Opis (opcjonalnie)" maxLength={LIMITS.descriptionMax} />
+            <Input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Cena (zł)" min={0} max={LIMITS.priceMax} step="0.01" />
 
-          <div className="flex gap-1 pt-1">
-            <button
-              type="button"
-              onClick={() => setImageMode('none')}
-              className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
-                imageMode === 'none'
-                  ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
-                  : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-              }`}
-            >Bez zdjęcia</button>
-            <button
-              type="button"
-              onClick={() => setImageMode('url')}
-              className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
-                imageMode === 'url'
-                  ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
-                  : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-              }`}
-            >🔗 URL</button>
-            <button
-              type="button"
-              onClick={() => setImageMode('upload')}
-              className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
-                imageMode === 'upload'
-                  ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
-                  : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-              }`}
-            >📷 Plik</button>
-          </div>
+            <ImageModeTabs value={imageMode} onChange={setImageMode} />
 
-          {imageMode === 'url' && (
-            <Input
-              type="url"
-              placeholder="https://… (URL zdjęcia)"
-              maxLength={LIMITS.imageUrlMax}
-              value={imageUrl}
-              onChange={e => setImageUrl(e.target.value)}
-              className="px-3 py-2"
-            />
-          )}
-          {imageMode === 'upload' && (
-            <Input
-              ref={editFileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              onChange={e => setEditFile(e.target.files?.[0] ?? null)}
-              className="px-3 py-2 text-xs file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700 dark:file:bg-gray-700 dark:file:text-gray-200"
-            />
-          )}
-          {previewUrl && (
-            <div className="aspect-[4/3] rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
-              <img src={previewUrl} alt="podgląd" className="w-full h-full object-cover" />
-            </div>
-          )}
+            {imageMode === 'url' && (
+              <Input
+                type="url"
+                placeholder="https://… (URL zdjęcia)"
+                maxLength={LIMITS.imageUrlMax}
+                value={imageUrl}
+                onChange={e => setImageUrl(e.target.value)}
+              />
+            )}
+            {imageMode === 'upload' && (
+              <Input
+                ref={editFileRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={e => setEditFile(e.target.files?.[0] ?? null)}
+                className="text-xs file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-[var(--ios-surface-2)] file:text-[var(--ios-ink)]"
+              />
+            )}
+            {previewUrl && (
+              <Box className="aspect-[4/3] rounded-md overflow-hidden bg-[var(--ios-surface-2)]">
+                <Image src={previewUrl} alt="podgląd" fit="cover" className="w-full h-full" />
+              </Box>
+            )}
 
-          {error && <p className="text-xs text-red-500">{error}</p>}
-          <div className="flex gap-2 pt-1 mt-auto">
-            <Button type="submit" loading={saving} fullWidth size="sm">
-              {saving ? 'Zapisywanie…' : 'Zapisz'}
-            </Button>
-            <Button type="button" variant="secondary" size="sm" onClick={() => setEditing(false)}>Anuluj</Button>
-          </div>
+            {error && <Text size="xs" tone="danger">{error}</Text>}
+            <Stack direction="row" gap={2} className="pt-1 mt-auto">
+              <Button type="submit" loading={saving} fullWidth size="sm">
+                {saving ? 'Zapisywanie…' : 'Zapisz'}
+              </Button>
+              <Button type="button" variant="secondary" size="sm" onClick={() => setEditing(false)}>Anuluj</Button>
+            </Stack>
+          </Stack>
         </form>
       ) : (
-        <div className="p-4 flex flex-col gap-2 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <p className="font-bold text-gray-900 dark:text-white text-base flex-1">{item.name}</p>
-            <span className="text-sm font-semibold text-blue-600 shrink-0">{formatPrice(item.price)}</span>
-          </div>
+        <Stack gap={2} className="p-4 flex-1">
+          <Stack direction="row" align="start" justify="between" gap={2}>
+            <Text weight="bold" className="flex-1">{item.name}</Text>
+            <Text as="span" size="sm" weight="semibold" tone="primary" className="shrink-0">
+              {formatPrice(item.price)}
+            </Text>
+          </Stack>
           {item.description && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{item.description}</p>
+            <Text size="sm" tone="muted">{item.description}</Text>
           )}
-          <div className="pt-2 mt-auto">
+          <Box className="pt-2 mt-auto">
             <input
               ref={inputRef}
               type="file"
@@ -248,9 +275,9 @@ function ItemTile({ item, onUpdated, onDeleted }: ItemTileProps) {
             >
               {item.image_url ? 'Zmień zdjęcie' : '📷 Dodaj zdjęcie'}
             </Button>
-            {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-          </div>
-        </div>
+            {error && <Text size="xs" tone="danger" className="mt-1">{error}</Text>}
+          </Box>
+        </Stack>
       )}
     </Card>
   )
@@ -260,8 +287,6 @@ interface AddItemFormProps {
   onSubmit: (data: CreateMenuItemReq, file: File | null) => Promise<void>
   onCancel: () => void
 }
-
-type ImageMode = 'none' | 'url' | 'upload'
 
 function AddItemForm({ onSubmit, onCancel }: AddItemFormProps) {
   const [name, setName] = useState('')
@@ -321,73 +346,46 @@ function AddItemForm({ onSubmit, onCancel }: AddItemFormProps) {
 
   return (
     <Card className="p-4">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <Input type="text" placeholder="Nazwa dania *" maxLength={LIMITS.nameMax} value={name} onChange={e => setName(e.target.value)} required className="px-3 py-2" />
-        <Input type="text" placeholder="Opis (opcjonalnie)" maxLength={LIMITS.descriptionMax} value={description} onChange={e => setDescription(e.target.value)} className="px-3 py-2" />
-        <Input type="number" placeholder="Cena (zł)" value={price} onChange={e => setPrice(e.target.value)} min={0} max={LIMITS.priceMax} step="0.01" className="px-3 py-2" />
+      <form onSubmit={handleSubmit}>
+        <Stack gap={2}>
+          <Input type="text" placeholder="Nazwa dania *" maxLength={LIMITS.nameMax} value={name} onChange={e => setName(e.target.value)} required />
+          <Input type="text" placeholder="Opis (opcjonalnie)" maxLength={LIMITS.descriptionMax} value={description} onChange={e => setDescription(e.target.value)} />
+          <Input type="number" placeholder="Cena (zł)" value={price} onChange={e => setPrice(e.target.value)} min={0} max={LIMITS.priceMax} step="0.01" />
 
-        <div className="flex gap-1 pt-1">
-          <button
-            type="button"
-            onClick={() => setImageMode('none')}
-            className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
-              imageMode === 'none'
-                ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
-                : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-            }`}
-          >Bez zdjęcia</button>
-          <button
-            type="button"
-            onClick={() => setImageMode('url')}
-            className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
-              imageMode === 'url'
-                ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
-                : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-            }`}
-          >🔗 URL</button>
-          <button
-            type="button"
-            onClick={() => setImageMode('upload')}
-            className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition cursor-pointer ${
-              imageMode === 'upload'
-                ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200'
-                : 'border-gray-200 text-gray-500 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800'
-            }`}
-          >📷 Plik</button>
-        </div>
+          <ImageModeTabs value={imageMode} onChange={setImageMode} />
 
-        {imageMode === 'url' && (
-          <Input
-            type="url"
-            placeholder="https://… (URL zdjęcia)"
-            maxLength={LIMITS.imageUrlMax}
-            value={imageUrl}
-            onChange={e => setImageUrl(e.target.value)}
-            className="px-3 py-2"
-          />
-        )}
-        {imageMode === 'upload' && (
-          <Input
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            onChange={handleFile}
-            className="px-3 py-2 text-xs file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-gray-100 file:text-gray-700 dark:file:bg-gray-700 dark:file:text-gray-200"
-          />
-        )}
-        {previewUrl && (
-          <div className="aspect-[4/3] rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
-            <img src={previewUrl} alt="podgląd" className="w-full h-full object-cover" />
-          </div>
-        )}
+          {imageMode === 'url' && (
+            <Input
+              type="url"
+              placeholder="https://… (URL zdjęcia)"
+              maxLength={LIMITS.imageUrlMax}
+              value={imageUrl}
+              onChange={e => setImageUrl(e.target.value)}
+            />
+          )}
+          {imageMode === 'upload' && (
+            <Input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              onChange={handleFile}
+              className="text-xs file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-[var(--ios-surface-2)] file:text-[var(--ios-ink)]"
+            />
+          )}
+          {previewUrl && (
+            <Box className="aspect-[4/3] rounded-md overflow-hidden bg-[var(--ios-surface-2)]">
+              <Image src={previewUrl} alt="podgląd" fit="cover" className="w-full h-full" />
+            </Box>
+          )}
 
-        {error && <p className="text-xs text-red-500">{error}</p>}
+          {error && <Text size="xs" tone="danger">{error}</Text>}
 
-        <div className="flex gap-2 pt-1">
-          <Button type="submit" loading={saving} fullWidth size="sm">
-            {saving ? 'Dodawanie…' : 'Dodaj'}
-          </Button>
-          <Button type="button" variant="secondary" size="sm" onClick={onCancel}>Anuluj</Button>
-        </div>
+          <Stack direction="row" gap={2} className="pt-1">
+            <Button type="submit" loading={saving} fullWidth size="sm">
+              {saving ? 'Dodawanie…' : 'Dodaj'}
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={onCancel}>Anuluj</Button>
+          </Stack>
+        </Stack>
       </form>
     </Card>
   )
@@ -437,15 +435,17 @@ export function MenusPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-xl font-bold dark:text-white">Menu</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Zarządzaj kartami, pozycjami i zdjęciami dań.</p>
-        </div>
+      <Stack direction="row" align="center" justify="between" className="mb-8">
+        <Stack gap={0}>
+          <Title level={1} size="lg">Menu</Title>
+          <Text size="sm" tone="muted" className="mt-0.5">
+            Zarządzaj kartami, pozycjami i zdjęciami dań.
+          </Text>
+        </Stack>
         {!showMenuForm && (
           <Button onClick={() => setShowMenuForm(true)}>+ Dodaj sekcje</Button>
         )}
-      </div>
+      </Stack>
 
       {showMenuForm && (
         <AddMenuForm onSubmit={handleCreateMenu} onCancel={() => setShowMenuForm(false)} />
@@ -463,31 +463,31 @@ export function MenusPage() {
           action={<Button size="lg" onClick={() => setShowMenuForm(true)}>+ Dodaj pierwszą sekcje</Button>}
         />
       ) : (
-        <div className="flex flex-col gap-10">
+        <Stack gap={10}>
           {menus.map(menu => {
             const menuItems = items.filter(it => it.menu_id === menu.id)
             const isAdding = showItemFormFor === menu.id
             return (
-              <section key={menu.id}>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">{menu.name}</h2>
+              <Box as="section" key={menu.id}>
+                <Stack direction="row" align="center" justify="between" className="mb-3">
+                  <Stack gap={0}>
+                    <Title level={2} size="md">{menu.name}</Title>
                     {menu.description && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{menu.description}</p>
+                      <Text size="sm" tone="muted" className="mt-0.5">{menu.description}</Text>
                     )}
-                  </div>
+                  </Stack>
                   {!isAdding && (
                     <Button size="sm" variant="secondary" onClick={() => setShowItemFormFor(menu.id)}>
                       + Dodaj pozycję
                     </Button>
                   )}
-                </div>
+                </Stack>
 
                 {menuItems.length === 0 && !isAdding && (
-                  <p className="text-sm text-gray-400 dark:text-gray-500 py-4">Brak pozycji w tej sekcji</p>
+                  <Text size="sm" tone="subtle" className="py-4">Brak pozycji w tej sekcji</Text>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Grid cols={1} responsive={{ sm: 2, lg: 3 }} gap={4}>
                   {menuItems.map(item => (
                     <ItemTile
                       key={item.id}
@@ -502,11 +502,11 @@ export function MenusPage() {
                       onCancel={() => setShowItemFormFor(null)}
                     />
                   )}
-                </div>
-              </section>
+                </Grid>
+              </Box>
             )
           })}
-        </div>
+        </Stack>
       )}
     </>
   )

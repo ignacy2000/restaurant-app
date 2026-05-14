@@ -1,8 +1,17 @@
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useRestaurant } from '../hooks/useRestaurants'
-import { Alert } from '../../../shared/components/Alert'
-import { Card } from '../../../shared/components/Card'
-import { Spinner } from '../../../shared/components/Spinner'
+import {
+  Alert,
+  Box,
+  Card,
+  Container,
+  Grid,
+  Link,
+  Spinner,
+  Stack,
+  Text,
+  Title,
+} from '../../../shared/components'
 
 const modules = [
   {
@@ -33,11 +42,8 @@ export function RestaurantDetailPage() {
   const { restaurant, loading, error } = useRestaurant(id!)
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 pb-12">
-      <Link
-        to="/"
-        className="inline-block text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition mb-6"
-      >
+    <Container maxWidth="6xl" padding="none" className="px-6 py-8 pb-12">
+      <Link to="/" variant="subtle" size="sm" className="inline-block mb-6">
         ← Moje restauracje
       </Link>
 
@@ -46,37 +52,46 @@ export function RestaurantDetailPage() {
       ) : error ? (
         <Alert>{error}</Alert>
       ) : restaurant ? (
-        <>
-          <div className="mb-8">
-            <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white">{restaurant.name}</h1>
+        <Box>
+          <Stack gap={1} className="mb-8">
+            <Title level={1} size="3xl">{restaurant.name}</Title>
             {restaurant.address && (
-              <p className="text-gray-500 dark:text-gray-400 mt-1.5">📍 {restaurant.address}</p>
+              <Text tone="muted">📍 {restaurant.address}</Text>
             )}
-          </div>
+          </Stack>
 
           {restaurant.description && (
             <Card className="p-6 mb-6">
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Opis</h2>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{restaurant.description}</p>
+              <Stack gap={2}>
+                <Title level={2} size="xs" tone="muted">Opis</Title>
+                <Text tone="muted">{restaurant.description}</Text>
+              </Stack>
             </Card>
           )}
 
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Moduły</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Title level={2} size="xs" tone="muted" className="mb-3">Moduły</Title>
+          <Grid cols={1} responsive={{ sm: 2, lg: 3 }} gap={4}>
             {modules.map(mod => (
               <Link
                 key={mod.key}
                 to={mod.path(id!)}
-                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm flex flex-col gap-2 transition hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 group"
+                variant="inherit"
+                className="group hover:opacity-100"
               >
-                <span className="text-2xl">{mod.icon}</span>
-                <p className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition">{mod.label}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{mod.description}</p>
+                <Card className="p-6 transition hover:shadow-[var(--ios-shadow-2)]">
+                  <Stack gap={2}>
+                    <Text as="span" size="xl">{mod.icon}</Text>
+                    <Text as="span" weight="bold" className="group-hover:text-[var(--ios-blue)] transition-colors">
+                      {mod.label}
+                    </Text>
+                    <Text as="span" size="sm" tone="muted">{mod.description}</Text>
+                  </Stack>
+                </Card>
               </Link>
             ))}
-          </div>
-        </>
+          </Grid>
+        </Box>
       ) : null}
-    </div>
+    </Container>
   )
 }

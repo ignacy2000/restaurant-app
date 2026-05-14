@@ -1,11 +1,16 @@
 import { useState, FormEvent } from 'react'
 import type { CreateTableReq } from '../types/table.types'
 import { validateCreateTable, TABLE_LIMITS } from '../services/validation'
-import { Alert } from '../../../../../shared/components/Alert'
-import { Button } from '../../../../../shared/components/Button'
-import { Card } from '../../../../../shared/components/Card'
-import { FormField } from '../../../../../shared/components/FormField'
-import { Input } from '../../../../../shared/components/Input'
+import {
+  Alert,
+  Button,
+  Card,
+  FormField,
+  Grid,
+  Input,
+  Stack,
+  Title,
+} from '../../../../../shared/components'
 
 interface Props {
   onSubmit: (data: CreateTableReq) => Promise<void>
@@ -40,45 +45,49 @@ export function AddTableForm({ onSubmit, onCancel }: Props) {
 
   return (
     <Card className="p-6 mb-6">
-      <h3 className="text-base font-bold mb-4 dark:text-white">Nowy stolik</h3>
+      <Stack gap={4}>
+        <Title level={3} size="sm">Nowy stolik</Title>
 
-      {error && <Alert className="mb-4">{error}</Alert>}
+        {error && <Alert>{error}</Alert>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Numer stolika *" htmlFor="t-number">
-            <Input
-              id="t-number"
-              type="number"
-              min={TABLE_LIMITS.numberMin}
-              max={TABLE_LIMITS.numberMax}
-              required
-              value={number}
-              onChange={e => setNumber(e.target.value)}
-              placeholder="np. 1"
-            />
-          </FormField>
-          <FormField label="Pojemność *" htmlFor="t-capacity">
-            <Input
-              id="t-capacity"
-              type="number"
-              min={TABLE_LIMITS.capacityMin}
-              max={TABLE_LIMITS.capacityMax}
-              required
-              value={capacity}
-              onChange={e => setCapacity(e.target.value)}
-              placeholder="np. 4"
-            />
-          </FormField>
-        </div>
+        <form onSubmit={handleSubmit}>
+          <Stack gap={4}>
+            <Grid cols={2} gap={4}>
+              <FormField label="Numer stolika *" htmlFor="t-number">
+                <Input
+                  id="t-number"
+                  type="number"
+                  min={TABLE_LIMITS.numberMin}
+                  max={TABLE_LIMITS.numberMax}
+                  required
+                  value={number}
+                  onChange={e => setNumber(e.target.value)}
+                  placeholder="np. 1"
+                />
+              </FormField>
+              <FormField label="Pojemność *" htmlFor="t-capacity">
+                <Input
+                  id="t-capacity"
+                  type="number"
+                  min={TABLE_LIMITS.capacityMin}
+                  max={TABLE_LIMITS.capacityMax}
+                  required
+                  value={capacity}
+                  onChange={e => setCapacity(e.target.value)}
+                  placeholder="np. 4"
+                />
+              </FormField>
+            </Grid>
 
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="secondary" onClick={onCancel}>Anuluj</Button>
-          <Button type="submit" loading={loading}>
-            {loading ? 'Dodawanie…' : 'Dodaj stolik'}
-          </Button>
-        </div>
-      </form>
+            <Stack direction="row" justify="end" gap={3}>
+              <Button type="button" variant="secondary" onClick={onCancel}>Anuluj</Button>
+              <Button type="submit" loading={loading}>
+                {loading ? 'Dodawanie…' : 'Dodaj stolik'}
+              </Button>
+            </Stack>
+          </Stack>
+        </form>
+      </Stack>
     </Card>
   )
 }

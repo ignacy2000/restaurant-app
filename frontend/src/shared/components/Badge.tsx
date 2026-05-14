@@ -1,32 +1,37 @@
 import { type ReactNode } from 'react'
 import { cn } from '../utils/cn'
 
-type BadgeColor = 'yellow' | 'blue' | 'indigo' | 'green' | 'gray' | 'red'
+type BadgeColor = 'yellow' | 'blue' | 'indigo' | 'green' | 'gray' | 'red' | 'orange'
 
 interface BadgeProps {
   color: BadgeColor
   children: ReactNode
   className?: string
+  /** Show the leading dot in the pill (iOS-style status capsule). */
+  dot?: boolean
 }
 
 const colors: Record<BadgeColor, string> = {
-  yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-  blue:   'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-  indigo: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
-  green:  'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  gray:   'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
-  red:    'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+  yellow: 'bg-[var(--ios-yellow-soft)] text-[var(--ios-yellow-ink)]',
+  blue:   'bg-[var(--ios-blue-soft)] text-[var(--ios-blue-ink)]',
+  indigo: 'bg-[var(--ios-indigo-soft)] text-[var(--ios-indigo-ink)]',
+  green:  'bg-[var(--ios-green-soft)] text-[var(--ios-green-ink)]',
+  gray:   'bg-[var(--ios-surface-2)] text-[var(--ios-ink-2)]',
+  red:    'bg-[var(--ios-red-soft)] text-[var(--ios-red-ink)]',
+  orange: 'bg-[var(--ios-orange-soft)] text-[var(--ios-orange-ink)]',
 }
 
-export function Badge({ color, children, className }: BadgeProps) {
+export function Badge({ color, children, className, dot = false }: BadgeProps) {
   return (
     <span
       className={cn(
-        'text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap',
+        'inline-flex items-center gap-1.5 text-[12px] font-semibold rounded-full whitespace-nowrap tracking-[-0.01em]',
+        dot ? 'pl-2 pr-2.5 py-1' : 'px-2.5 py-1',
         colors[color],
         className
       )}
     >
+      {dot && <span className="w-[6px] h-[6px] rounded-full bg-current opacity-85" />}
       {children}
     </span>
   )

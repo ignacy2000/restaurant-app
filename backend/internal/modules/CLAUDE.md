@@ -41,4 +41,17 @@ repository_integration_test.go  # integracyjne z prawdziwą DB
 
 - Repository nie wie nic o Gin. Service nie wie o Gin. Tylko Handler dotyka `*gin.Context`.
 - DTO mają tagi JSON i binding; entity nie (chyba że ten konkretny model wraca surowo).
-- Cross-module dependency idzie przez **typ z innego modułu** importowany, nie przez DI — patrz np. `auth.Service` używające `user.Repository`.
+- Cross-module dependency idzie przez **typ z innego modułu** importowany, nie przez DI — patrz np. `auth.Service` używające `user.Repository`, czy `restaurant/order.Service` używające `restaurant/table.Repository`.
+- Zewnętrzne zależności (storage S3, mailer, hub WS, kolejka) trafiają do `Service` jako **interfejsy zdefiniowane lokalnie w module** (patrz `restaurant.ImageStore` w `mount.go`), żeby testy nie musiały importować `pkg/storage` itp.
+
+## Co już istnieje
+
+Moduły implementujące powyższy wzorzec:
+
+- `auth/` — login/refresh/logout, reset hasła (mail przez Asynq), `origins` dla dynamic CORS
+- `user/` — rejestracja
+- `restaurant/` — restauracje (zalogowanego właściciela)
+- `restaurant/menu/` — sekcje + pozycje menu; upload zdjęć (multipart → S3)
+- `restaurant/table/` — stoliki z pojemnością (QR generuje frontend)
+- `restaurant/order/` — zamówienia + flow `awaiting_confirmation` z linkiem e-mailowym (token jednorazowy)
+- `restaurant/call/` — wywołania kelnera

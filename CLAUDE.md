@@ -4,9 +4,9 @@ Monorepo: aplikacja do obsługi stolików w restauracji.
 
 ## Stos
 
-- **backend/** — Go 1.26 + Gin + pgx + PostgreSQL + Redis (Asynq) + WebSocket
-- **frontend/** — React 18 + Vite + TypeScript + Tailwind v4 + Bun + Storybook 8
-- **docker-compose.yml** — Postgres, Redis, MinIO (S3 dla zdjęć menu), Mailpit, backend, frontend
+- **backend/** — Go 1.26 + Gin + pgx + PostgreSQL + Redis (Asynq) + MinIO (S3) + WebSocket
+- **frontend/** — React 18 + Vite + TypeScript + Tailwind v4 + Bun + Storybook 8 (design system w stylu iOS — patrz `frontend/src/shared/components/CLAUDE.md`)
+- **docker-compose.yml** — Postgres, Redis, MinIO (S3 dla zdjęć menu), Mailpit (dev SMTP), Redis Commander, backend, frontend
 - **Tiltfile** — orkiestracja dev (hot reload przez sync; pełny rebuild na zmianę `go.mod`/`bun.lock`)
 
 ## Uruchomienie
@@ -21,6 +21,7 @@ tilt down       # stop (volumes zostają)
 - Tilt UI: http://localhost:10350
 - MinIO console: http://localhost:9001 (`minioadmin` / `minioadmin`)
 - Mailpit UI: http://localhost:8025
+- Redis Commander: http://localhost:8081
 
 Bez kontenerów (pod IDE/testy):
 
@@ -48,9 +49,11 @@ Lokalnie też działa.
 
 ## Konwencje wysokopoziomowe
 
-- Wszystkie teksty UI i komunikaty błędów po polsku.
+- Wszystkie teksty UI i komunikaty błędów po polsku (komunikaty z backendu po angielsku — patrz `backend/CLAUDE.md`).
 - Backend i frontend mają lustrzaną strukturę "modułów" (auth, restaurants, restaurants/menu, …) — patrz `backend/internal/modules/CLAUDE.md` i `frontend/src/modules/CLAUDE.md`.
+- Frontend używa **design systemu** w `frontend/src/shared/components/` — w kodzie feature'owym nie używamy surowych `<div>`/`<p>`/`<h1>`/`<a>`/`<button>` itp. (patrz `frontend/src/shared/components/CLAUDE.md`).
 - Migracje DB są **embedded** i uruchamiają się automatycznie na starcie backendu — patrz `backend/cmd/api/main.go`.
+- Zdjęcia pozycji menu lecą do MinIO (bucket `menu-images`) — backend zwraca publiczne URL-e przez `S3_PUBLIC_ENDPOINT`.
 
 ## Memory
 
