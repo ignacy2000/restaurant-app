@@ -138,6 +138,7 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     environment:
+      MP_DATABASE: /data/mailpit.db
       MP_SMTP_AUTH_ACCEPT_ANY: "true"
       MP_SMTP_AUTH_ALLOW_INSECURE: "true"
     ports:
